@@ -11,7 +11,16 @@ import com.aware.ui.PermissionsHandler;
 import com.aware.utils.Aware_Plugin;
 
 public class Plugin extends Aware_Plugin {
-
+/*
+* I just added these to
+* Test
+* That
+* GIT
+* Is
+* Working
+*
+*
+* */
     @Override
     public void onCreate() {
         super.onCreate();
