@@ -1,21 +1,23 @@
 package com.aware.plugin.survey;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
 import com.aware.Aware;
 import com.aware.Aware_Preferences;
 import com.aware.ESM;
 import com.aware.ui.PermissionsHandler;
 import com.aware.ui.esms.ESMFactory;
-import com.aware.ui.esms.ESM_Likert;
-import com.aware.ui.esms.ESM_PAM;
+import com.aware.ui.esms.ESM_Question;
 import com.aware.utils.Aware_Plugin;
-import com.aware.utils.Scheduler;
 
 import org.json.JSONException;
+
+import static android.content.ContentValues.TAG;
 
 public class Plugin extends Aware_Plugin {
 
@@ -51,6 +53,22 @@ public class Plugin extends Aware_Plugin {
         Aware.startPlugin(this, "com.aware.plugin.survey");
     }
 
+    public static void onLocationReceive(Context context, Intent intent){
+        ESM_Question locationQuestion = new ESM_Question();
+        try {
+            locationQuestion.setSubmitButton("OK")
+                    .setTitle("I've got a question for you...")
+                    .setInstructions("Where were you?!")
+                    .setExpirationThreshold(0)
+                    .setNotificationTimeout(300);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        ESMFactory factory = new ESMFactory();
+        factory.addESM(locationQuestion);
+        ESM.queueESM(context,factory.build());
+     }
+
     //This function gets called every 5 minutes by AWARE to make sure this plugin is still running.
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -69,74 +87,11 @@ public class Plugin extends Aware_Plugin {
             DEBUG = Aware.getSetting(this, Aware_Preferences.DEBUG_FLAG).equals("true");
 
             //Initialize our plugin's settings
-            Aware.setSetting(this, Settings.STATUS_PLUGIN_TEMPLATE, true);
+            Aware.setSetting(this, Settings.STATUS_SURVEY_PLUGIN, true);
 
             //Ask AWARE to start ESM
             Aware.setSetting(this, Aware_Preferences.STATUS_ESM, true);
             Aware.startESM(this);
-
-            //Setting morning question
-            try {
-                //Using PAM to get users' affect state in the morning
-                ESMFactory esmFactory = new ESMFactory();
-
-                ESM_PAM morning_question = new ESM_PAM();
-                morning_question.setTitle("Morning!")
-                        .setInstructions("How are you feeling today?")
-                        .setExpirationThreshold(0) //no expiration = shows a notification the user can use to answer at any time
-                        .setNotificationTimeout(5 * 60) //the notification is automatically removed and the questionnaire expired after 5 minutes ( 5 * 60 seconds)
-                        .setSubmitButton("OK");
-
-                esmFactory.addESM(morning_question);
-
-                //Schedule this question for the morning, only if not yet defined
-                Scheduler.Schedule morning = Scheduler.getSchedule(this, "morning_question");
-                if (morning == null) {
-                    morning = new Scheduler.Schedule("morning_question"); //schedule with morning_question as ID
-                    morning.addHour(8); //8 AM (24h format), every day
-                    morning.setActionType(Scheduler.ACTION_TYPE_BROADCAST); //sending a request to the client via broadcast
-                    morning.setActionClass(ESM.ACTION_AWARE_QUEUE_ESM); //with the action of ACTION_AWARE_QUEUE_ESM, i.e., queueing a new ESM
-                    morning.addActionExtra(ESM.EXTRA_ESM, esmFactory.build()); //add the questions from the factory
-
-                    Scheduler.saveSchedule(this, morning); //save the questionnaire and schedule it
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            //Setting evening question
-            try {
-                //Using Likert scale to get users' rating of the day
-                ESMFactory esmFactory = new ESMFactory();
-
-                ESM_Likert evening_question = new ESM_Likert();
-                evening_question.setLikertMax(5)
-                        .setLikertMinLabel("Awful")
-                        .setLikertMaxLabel("Awesome!")
-                        .setLikertStep(1)
-                        .setTitle("Evening!")
-                        .setInstructions("How would you rate today?")
-                        .setExpirationThreshold(0) //no expiration = shows a notification the user can use to answer at any time
-                        .setNotificationTimeout(5 * 60) //the notification is automatically removed and the questionnaire expired after 5 minutes ( 5 * 60 seconds)
-                        .setSubmitButton("OK");
-
-                esmFactory.addESM(evening_question);
-
-                //Schedule this question for the evening, only if not yet defined
-                Scheduler.Schedule evening = Scheduler.getSchedule(this, "evening_question");
-                if (evening == null) {
-                    evening = new Scheduler.Schedule("evening_question"); //schedule with morning_question as ID
-                    evening.addHour(20); //8 PM (24h format), every day
-                    evening.setActionType(Scheduler.ACTION_TYPE_BROADCAST); //sending a request to the client via broadcast
-                    evening.setActionClass(ESM.ACTION_AWARE_QUEUE_ESM); //with the action of ACTION_AWARE_QUEUE_ESM, i.e., queueing a new ESM
-                    evening.addActionExtra(ESM.EXTRA_ESM, esmFactory.build()); //add the questions from the factory
-
-                    Scheduler.saveSchedule(this, evening); //save the questionnaire and schedule it
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
         } else {
             Intent permissions = new Intent(this, PermissionsHandler.class);
             permissions.putExtra(PermissionsHandler.EXTRA_REQUIRED_PERMISSIONS, REQUIRED_PERMISSIONS);
@@ -151,7 +106,7 @@ public class Plugin extends Aware_Plugin {
     public void onDestroy() {
         super.onDestroy();
 
-        Aware.setSetting(this, Settings.STATUS_PLUGIN_TEMPLATE, false);
+        Aware.setSetting(this, Settings.STATUS_SURVEY_PLUGIN, false);
 
         //Stop AWARE's instance running inside the plugin package
         Aware.stopAWARE();
