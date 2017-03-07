@@ -9,4 +9,26 @@
         android:persistent="true"
         android:summary="Activate/deactivate plugin" />
 
+    <CheckBoxPreference
+        android:key="status_location_gps"
+        android:defaultValue="false"
+        android:persistent="true"
+        android:summary="Activate/deactivate GPS tracking" />
+
+    <EditTextPreference
+        android:defaultValue="180"
+        android:inputType="numberDecimal"
+        android:key="frequency_gps"
+        android:persistent="true"
+        android:summary="Every 180 seconds"
+        android:title="How frequently to acquire location (in seconds)" />
+
+    <EditTextPreference
+        android:key="gps_expiration"
+        android:inputType="numberDecimal"
+        android:defaultValue="300"
+        android:persistent="true"
+        android:title="How long until location data is outdated(in seconds)"
+        android:summary="Every 300 seconds"/>
+
 </PreferenceScreen>

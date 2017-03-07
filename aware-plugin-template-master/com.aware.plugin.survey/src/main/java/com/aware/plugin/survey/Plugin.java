@@ -2,6 +2,7 @@ package com.aware.plugin.survey;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.support.v4.content.ContextCompat;
@@ -10,9 +11,14 @@ import android.util.Log;
 import com.aware.Aware;
 import com.aware.Aware_Preferences;
 import com.aware.ESM;
+import com.aware.Locations;
+import com.aware.providers.Locations_Provider;
 import com.aware.ui.PermissionsHandler;
 import com.aware.ui.esms.ESMFactory;
+import com.aware.ui.esms.ESM_Checkbox;
+import com.aware.ui.esms.ESM_Freetext;
 import com.aware.ui.esms.ESM_Question;
+import com.aware.ui.esms.ESM_Radio;
 import com.aware.utils.Aware_Plugin;
 
 import org.json.JSONException;
@@ -20,7 +26,8 @@ import org.json.JSONException;
 import static android.content.ContentValues.TAG;
 
 public class Plugin extends Aware_Plugin {
-
+    static LocationListener listener = new LocationListener();
+    private static boolean done=false;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -39,6 +46,10 @@ public class Plugin extends Aware_Plugin {
             }
         };
 
+        // set up listener
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Locations.ACTION_AWARE_LOCATIONS);
+        registerReceiver(listener, filter);
         //Add permissions you need (Android M+).
         //By default, AWARE asks access to the #Manifest.permission.WRITE_EXTERNAL_STORAGE
 
@@ -54,19 +65,24 @@ public class Plugin extends Aware_Plugin {
     }
 
     public static void onLocationReceive(Context context, Intent intent){
-        ESM_Question locationQuestion = new ESM_Question();
+        if(done) return;
+        done=true;
         try {
-            locationQuestion.setSubmitButton("OK")
-                    .setTitle("I've got a question for you...")
-                    .setInstructions("Where were you?!")
-                    .setExpirationThreshold(0)
-                    .setNotificationTimeout(300);
+            ESM_Radio question = new ESM_Radio();
+            question.addRadio("Work")
+                    .addRadio("Home")
+                    .addRadio("Shopping")
+                    .addRadio("Holiday")
+                    .addRadio("Other")
+                    .setTitle("Location Survey Questionnaire")
+                    .setSubmitButton("OK")
+                    .setInstructions("Where were you at 3:30pm");
+            ESMFactory factory = new ESMFactory();
+            factory.addESM(question);
+            ESM.queueESM(context,factory.build());
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        ESMFactory factory = new ESMFactory();
-        factory.addESM(locationQuestion);
-        ESM.queueESM(context,factory.build());
      }
 
     //This function gets called every 5 minutes by AWARE to make sure this plugin is still running.
@@ -82,7 +98,7 @@ public class Plugin extends Aware_Plugin {
             }
         }
 
-        if (permissions_ok) {
+        if (permissions_ok){
             //Check if the user has toggled the debug messages
             DEBUG = Aware.getSetting(this, Aware_Preferences.DEBUG_FLAG).equals("true");
 
@@ -92,6 +108,8 @@ public class Plugin extends Aware_Plugin {
             //Ask AWARE to start ESM
             Aware.setSetting(this, Aware_Preferences.STATUS_ESM, true);
             Aware.startESM(this);
+            onLocationReceive(this,intent);
+
         } else {
             Intent permissions = new Intent(this, PermissionsHandler.class);
             permissions.putExtra(PermissionsHandler.EXTRA_REQUIRED_PERMISSIONS, REQUIRED_PERMISSIONS);
