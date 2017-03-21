@@ -29,11 +29,7 @@ public class LocationListener extends BroadcastReceiver {
         else {
             Cursor data = c.getContentResolver().query(Locations_Provider.Locations_Data.CONTENT_URI, null, null, null, Locations_Provider.Locations_Data.TIMESTAMP + " DESC LIMIT 1");
             Log.i(TAG,data.toString());
-            if (intent.getExtras() == null) {
-                Log.i(TAG, "hmm the extras were null " + intent.getDataString());
-//                Log.i(TAG, intent.toString());
-            }
-            Log.i(TAG, "Location pinged after null test");
+            Log.i(TAG, "Location pinged");
         }
     }
 }
