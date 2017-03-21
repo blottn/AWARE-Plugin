@@ -27,8 +27,8 @@ public class LocationListener extends BroadcastReceiver {
             Log.i(TAG, "it was null");
         }
         else {
-            Object o = intent.getExtras().get(Locations_Provider.Locations_Data.DEVICE_ID);
-            Log.i(TAG,o.toString());
+            Cursor data = c.getContentResolver().query(Locations_Provider.Locations_Data.CONTENT_URI, null, null, null, Locations_Provider.Locations_Data.TIMESTAMP + " DESC LIMIT 1");
+            Log.i(TAG,data.toString());
             if (intent.getExtras() == null) {
                 Log.i(TAG, "hmm the extras were null " + intent.getDataString());
 //                Log.i(TAG, intent.toString());
