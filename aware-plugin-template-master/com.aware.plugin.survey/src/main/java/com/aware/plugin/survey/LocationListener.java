@@ -27,8 +27,12 @@ public class LocationListener extends BroadcastReceiver {
             Log.i(TAG, "it was null");
         }
         else {
+            //0 is double_longitude
             Cursor data = c.getContentResolver().query(Locations_Provider.Locations_Data.CONTENT_URI, null, null, null, Locations_Provider.Locations_Data.TIMESTAMP + " DESC LIMIT 1");
-            Log.i(TAG,data.toString());
+            if (data != null && data.moveToFirst()) {
+                Log.i(TAG," " + data.getDouble(data.getColumnIndex(Locations_Provider.Locations_Data.LATITUDE)));
+            }
+            data.close();
             Log.i(TAG, "Location pinged");
         }
     }
