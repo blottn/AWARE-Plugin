@@ -6,27 +6,21 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 
 import com.aware.Aware;
 import com.aware.Aware_Preferences;
 import com.aware.ESM;
 import com.aware.Locations;
-import com.aware.providers.Locations_Provider;
 import com.aware.ui.PermissionsHandler;
 import com.aware.ui.esms.ESMFactory;
-import com.aware.ui.esms.ESM_Checkbox;
-import com.aware.ui.esms.ESM_Freetext;
-import com.aware.ui.esms.ESM_Question;
 import com.aware.ui.esms.ESM_Radio;
 import com.aware.utils.Aware_Plugin;
 
 import org.json.JSONException;
 
-import static android.content.ContentValues.TAG;
-
 public class Plugin extends Aware_Plugin {
-    static LocationListener listener = new LocationListener();
+    static LocationListener locLis = new LocationListener();
+    static ESMListener esmLis = new ESMListener();
     private static boolean done=false;
     @Override
     public void onCreate() {
@@ -46,10 +40,17 @@ public class Plugin extends Aware_Plugin {
             }
         };
 
-        // set up listener
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Locations.ACTION_AWARE_LOCATIONS);
-        registerReceiver(listener, filter);
+        // set up listeners
+        IntentFilter locationFilter = new IntentFilter();
+        locationFilter.addAction(Locations.ACTION_AWARE_LOCATIONS);
+        registerReceiver(locLis, locationFilter);
+
+        IntentFilter esmFilter = new IntentFilter();
+        esmFilter.addAction(ESM.ACTION_AWARE_ESM_ANSWERED);
+        registerReceiver(esmLis, esmFilter);
+
+
+
         //Add permissions you need (Android M+).
         //By default, AWARE asks access to the #Manifest.permission.WRITE_EXTERNAL_STORAGE
 
@@ -123,9 +124,7 @@ public class Plugin extends Aware_Plugin {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
         Aware.setSetting(this, Settings.STATUS_SURVEY_PLUGIN, false);
-
         //Stop AWARE's instance running inside the plugin package
         Aware.stopAWARE(this);
     }
