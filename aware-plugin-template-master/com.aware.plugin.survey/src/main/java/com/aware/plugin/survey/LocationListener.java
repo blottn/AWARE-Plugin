@@ -18,8 +18,11 @@ import static android.content.ContentValues.TAG;
 
 public class LocationListener extends BroadcastReceiver {
 
-    public LocationListener() {
+    DataManager mgr;
+
+    public LocationListener(DataManager mgr) {
         super();
+        this.mgr = mgr;
     }
 
     public void onReceive(Context c, Intent intent) {
@@ -31,7 +34,7 @@ public class LocationListener extends BroadcastReceiver {
             loc.setLongitude(data.getDouble(data.getColumnIndex(Locations_Provider.Locations_Data.LONGITUDE)));
             loc.setAccuracy(data.getInt(data.getColumnIndex(Locations_Provider.Locations_Data.ACCURACY)));
             loc.setTime(data.getLong(data.getColumnIndex(Locations_Provider.Locations_Data.TIMESTAMP)));
-            Log.d(TAG, loc.toString());
+            mgr.giveLocation(loc);
         }
         data.close();
     }
