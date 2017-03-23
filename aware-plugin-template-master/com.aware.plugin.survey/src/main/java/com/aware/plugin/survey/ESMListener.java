@@ -27,7 +27,7 @@ public class ESMListener extends BroadcastReceiver {
         else {
             Cursor data = c.getContentResolver().query(ESM_Provider.ESM_Data.CONTENT_URI, null, null, null, ESM_Provider.ESM_Data.TIMESTAMP + " DESC LIMIT 1");
             if (data != null && data.moveToFirst()) {
-                Log.i(TAG," " + data.getDouble(data.getColumnIndex(ESM_Provider.ESM_Data.ANSWER)));
+                Log.i(TAG," " + data.getString(data.getColumnIndex(ESM_Provider.ESM_Data.ANSWER)));
             }
             data.close();
             Log.i(TAG, "Location pinged");

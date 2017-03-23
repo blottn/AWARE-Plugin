@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.support.v4.content.ContextCompat;
 
@@ -13,6 +14,7 @@ import com.aware.ESM;
 import com.aware.Locations;
 import com.aware.ui.PermissionsHandler;
 import com.aware.ui.esms.ESMFactory;
+import com.aware.ui.esms.ESM_Freetext;
 import com.aware.ui.esms.ESM_Radio;
 import com.aware.utils.Aware_Plugin;
 
@@ -66,19 +68,14 @@ public class Plugin extends Aware_Plugin {
         Aware.startPlugin(this, "com.aware.plugin.survey");
     }
 
-    public static void onLocationReceive(Context context, Intent intent){
+    public static void onLocationReceive(Context context, Intent intent,Location location){
         if(done) return;
         done=true;
         try {
-            ESM_Radio question = new ESM_Radio();
-            question.addRadio("Work")
-                    .addRadio("Home")
-                    .addRadio("Shopping")
-                    .addRadio("Holiday")
-                    .addRadio("Other")
-                    .setTitle("Location Survey Questionnaire")
+            ESM_Freetext question = new ESM_Freetext();
+            question.setTitle("Location Survey Questionnaire")
                     .setSubmitButton("OK")
-                    .setInstructions("Where were you at 3:30pm");
+                    .setInstructions("What is this location? " + location.getLatitude() + ", " + location.getLongitude());
             ESMFactory factory = new ESMFactory();
             factory.addESM(question);
             ESM.queueESM(context,factory.build());
@@ -110,7 +107,6 @@ public class Plugin extends Aware_Plugin {
             //Ask AWARE to start ESM
             Aware.setSetting(this, Aware_Preferences.STATUS_ESM, true);
             Aware.startESM(this);
-            onLocationReceive(this,intent);
 
         } else {
             Intent permissions = new Intent(this, PermissionsHandler.class);
