@@ -12,6 +12,9 @@ import static android.content.ContentValues.TAG;
  */
 
 public class DataManager {
+
+
+
     //default constructor should be replaced with more useful constructor in future
     public DataManager() {
 
