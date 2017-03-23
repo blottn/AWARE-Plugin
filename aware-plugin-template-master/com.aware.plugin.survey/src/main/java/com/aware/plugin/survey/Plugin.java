@@ -19,7 +19,8 @@ import com.aware.utils.Aware_Plugin;
 import org.json.JSONException;
 
 public class Plugin extends Aware_Plugin {
-    static LocationListener locLis = new LocationListener();
+    static DataManager default_mgr = new DataManager();
+    static LocationListener locLis = new LocationListener(default_mgr);
     static ESMListener esmLis = new ESMListener();
     private static boolean done=false;
     @Override
