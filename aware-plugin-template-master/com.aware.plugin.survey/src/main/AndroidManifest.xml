@@ -13,6 +13,9 @@
             android:exported="true"
             android:label="AWARE: Plugin Template"/>
 
+        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+                        android:maxSdkVersion="18"/>
+
         <activity
             android:name="com.aware.plugin.survey.Settings"
             android:exported="true" />
