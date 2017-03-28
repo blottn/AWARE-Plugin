@@ -25,16 +25,26 @@ public class LocationListener extends BroadcastReceiver {
         this.mgr = mgr;
     }
 
-    public void onReceive(Context c, Intent intent) {
-        Log.d(TAG, "Received a location broadcast");
+    public void onReceive(final Context c,final Intent intent) {
+        if(mgr.isProcessing()){
+            Log.i(TAG,"Received location but still processing previous");
+        }
+        else
+            Log.d(TAG, "Received a location broadcast");
         Cursor data = c.getContentResolver().query(Locations_Provider.Locations_Data.CONTENT_URI, null, null, null, Locations_Provider.Locations_Data.TIMESTAMP + " DESC LIMIT 1");
         if (data != null && data.moveToFirst()) {
-            Location loc = new Location("Listener");
+            final Location loc = new Location("Listener");
             loc.setLatitude(data.getDouble(data.getColumnIndex(Locations_Provider.Locations_Data.LATITUDE)));
             loc.setLongitude(data.getDouble(data.getColumnIndex(Locations_Provider.Locations_Data.LONGITUDE)));
             loc.setAccuracy(data.getInt(data.getColumnIndex(Locations_Provider.Locations_Data.ACCURACY)));
             loc.setTime(data.getLong(data.getColumnIndex(Locations_Provider.Locations_Data.TIMESTAMP)));
-            mgr.giveLocation(c, intent, loc);
+            new Thread(new Runnable() {
+                public void run()
+                {
+                    mgr.giveLocation(c, loc);
+                }
+            }).start();
+
         }
         data.close();
     }

@@ -23,7 +23,7 @@ import org.json.JSONException;
 public class Plugin extends Aware_Plugin {
     static DataManager default_mgr = new DataManager();
     static LocationListener locLis = new LocationListener(default_mgr);
-    static ESMListener esmLis = new ESMListener();
+    static ESMListener esmLis = new ESMListener(default_mgr);
     @Override
     public void onCreate() {
         super.onCreate();

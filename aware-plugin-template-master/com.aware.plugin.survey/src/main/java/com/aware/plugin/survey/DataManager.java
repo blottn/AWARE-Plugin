@@ -8,10 +8,12 @@ import android.util.Log;
 import com.aware.ESM;
 import com.aware.ui.esms.ESMFactory;
 import com.aware.ui.esms.ESM_Freetext;
+import com.aware.ui.esms.ESM_Question;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.util.Queue;
+import java.sql.Time;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static android.content.ContentValues.TAG;
@@ -21,8 +23,15 @@ import static android.content.ContentValues.TAG;
  */
 
 public class DataManager {
-    private Location previousLocation=null;
-    private int negligibleRange=100;
+    private static Location previousLocation=null;
+
+    private Location loc = null;
+    private JSONObject esmJson = null;
+    private String esmAnswer = null;
+    private boolean processing = false;
+
+    private final int NEGLIGIBLE_RANGE = 50;
+    private final int TOLERABLE_ACCURACY = 250;
 
     public static class ProviderManager extends Thread {
 
@@ -51,24 +60,44 @@ public class DataManager {
     private static ProviderManager provide = new ProviderManager(new Provider());
 
     //default constructor should be replaced with more useful constructor in future
-    public DataManager() {
+    DataManager() {
 
     }
 
-    public void giveLocation(Context context, Intent intent, Location location) {
+    void giveLocation(final Context context,final Location location) {
+        processing = true;
         if (isNoteworthy(location)) {
             Log.d(TAG, "Passed Location");
             Log.d(TAG, location.toString());
-            onLocationReceive(context, intent,location);
+            onLocationReceive(context, location);
         }
         else {
             Log.d(TAG, "Passed non-noteworthy location");
         }
     }
 
-    public boolean isNoteworthy(Location location) {
+    void onESMAnswered(JSONObject info,String answer){
+        if(info==null || answer==null)
+            return;
+        esmJson = info;
+        esmAnswer = answer;
+        storeData();
+    }
+
+    private void storeData(){
+        /* TO DO: Store relevant data in database */
+        try {
+            Log.d(TAG, "No database so here you go: \n" + esmJson.getString("esm_instructions")
+                    + "\nAnswer: "+ esmAnswer + "\nLocation: " + loc.getLatitude() + ", " + loc.getLongitude());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        processing = false;
+    }
+
+    private boolean isNoteworthy(Location location) {
         Log.i(TAG,"Checking if location is noteworthy");
-        if(location == null || location.getAccuracy() > 250)
+        if(location == null || location.getAccuracy() > TOLERABLE_ACCURACY)
             return false;
         if(previousLocation==null){
             Log.i(TAG,"No previous location");
@@ -76,14 +105,15 @@ public class DataManager {
             return true;
         }
         if(distance(location.getLatitude(),location.getLongitude(),previousLocation.getLatitude(),
-                    previousLocation.getLongitude())<negligibleRange){ //If points are within negligible range
+                    previousLocation.getLongitude())< NEGLIGIBLE_RANGE){ //If points are within negligible range
             Log.i(TAG,"Location was negligible");
             return false;
         }
+        previousLocation = location;
         return true;
     }
 
-    public int distance(double lat1,double lon1,double lat2,double lon2) {
+    private int distance(double lat1,double lon1,double lat2,double lon2) {
         double p = 0.017453292519943295;    // Math.PI / 180
         double a = 0.5 - Math.cos((lat2 - lat1) * p)/2 +
                 Math.cos(lat1 * p) * Math.cos(lat2 * p) *
@@ -92,15 +122,28 @@ public class DataManager {
         return (int)(1000* 12742 * Math.asin(Math.sqrt(a))); // 2 * R; R = 6371 km
     }
 
-    public void onLocationReceive(Context context, Intent intent,Location location){
+    private void onLocationReceive(Context context,Location location){
         try {
+            int locType = getLocationType(location);
+            switch (locType){
+                case 0:
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    break;
+                default:
+                    break;
+            }
             ESM_Freetext question = new ESM_Freetext();
-            question.setTitle("Location Survey Questionnaire")
+            Time t = new Time(location.getTime());
+            question.setTitle("New Location")
                     .setSubmitButton("OK")
-                    .setInstructions("What is this location? " + location.getLatitude() + ", " + location.getLongitude());
+                    .setInstructions("Where were you at "+ t.toString()+ "? ");
             ESMFactory factory = new ESMFactory();
             factory.addESM(question);
             ESM.queueESM(context,factory.build());
+            loc = location;
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -108,12 +151,16 @@ public class DataManager {
 
     /**
      *
-     * @param loc
+     * @param loc received location
      * @return Type of location: 0 = New(Not within previous location radius)
-     *                           1 = Previous Visits < 10(Rare Location)
-     *                           2 = Previous Visits > 10(Frequent Location)
+     *                           1 = Possibly previous location(Within specified distance)
+     *                           2 = Definitely previous location(Within negligible distance)
      */
-    public int getLocationType(Location loc){
+    private int getLocationType(Location loc){
         return 0;
+    }
+
+    boolean isProcessing(){
+        return processing;
     }
 }
