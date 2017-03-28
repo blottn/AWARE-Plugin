@@ -2,8 +2,11 @@ package com.aware.plugin.survey;
 
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
+import android.location.*;
 import android.util.Log;
+
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static android.content.ContentValues.TAG;
 
@@ -12,6 +15,33 @@ import static android.content.ContentValues.TAG;
  */
 
 public class DataManager {
+
+    public static class ProviderManager extends Thread {
+
+        private Provider provider;
+
+        private ConcurrentLinkedQueue<Location> toAdd;
+
+        ProviderManager(Provider provider) {
+            this.provider = provider;
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                if (!toAdd.isEmpty()) {
+//                    provider.insert(null, Location);    //UNF
+                }
+            }
+        }
+
+        void addLocation(Location location) {
+            toAdd.add(location);
+        }
+    }
+
+    private static ProviderManager provide = new ProviderManager(new Provider());
+
     //default constructor should be replaced with more useful constructor in future
     public DataManager() {
 
