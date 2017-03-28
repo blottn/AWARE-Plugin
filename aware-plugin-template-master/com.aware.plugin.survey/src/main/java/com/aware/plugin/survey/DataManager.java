@@ -18,11 +18,11 @@ public class DataManager {
 
     public static class ProviderManager extends Thread {
 
-        private LocationProvider provider;
+        private Provider provider;
 
         private ConcurrentLinkedQueue<Location> toAdd;
 
-        ProviderManager(LocationProvider provider) {
+        ProviderManager(Provider provider) {
             this.provider = provider;
         }
 
@@ -40,7 +40,7 @@ public class DataManager {
         }
     }
 
-    private static ProviderManager provide = new ProviderManager(new LocationProvider());
+    private static ProviderManager provide = new ProviderManager(new Provider());
 
     //default constructor should be replaced with more useful constructor in future
     public DataManager() {
