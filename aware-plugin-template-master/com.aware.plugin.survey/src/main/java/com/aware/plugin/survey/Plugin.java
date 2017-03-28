@@ -24,7 +24,6 @@ public class Plugin extends Aware_Plugin {
     static DataManager default_mgr = new DataManager();
     static LocationListener locLis = new LocationListener(default_mgr);
     static ESMListener esmLis = new ESMListener();
-    private static boolean done=false;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -68,21 +67,8 @@ public class Plugin extends Aware_Plugin {
         Aware.startPlugin(this, "com.aware.plugin.survey");
     }
 
-    public static void onLocationReceive(Context context, Intent intent,Location location){
-        if(done) return;
-        done=true;
-        try {
-            ESM_Freetext question = new ESM_Freetext();
-            question.setTitle("Location Survey Questionnaire")
-                    .setSubmitButton("OK")
-                    .setInstructions("What is this location? " + location.getLatitude() + ", " + location.getLongitude());
-            ESMFactory factory = new ESMFactory();
-            factory.addESM(question);
-            ESM.queueESM(context,factory.build());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-     }
+
+
 
     //This function gets called every 5 minutes by AWARE to make sure this plugin is still running.
     @Override
