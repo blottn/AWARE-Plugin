@@ -28,8 +28,6 @@ public class DataManager {
     static Time startQuestions = null;
     static Time stopQuestions = null;
     private Location loc = null;
-    private JSONObject esmJson = null;
-    private String esmAnswer = null;
     private boolean processing = false;
 
     private final int NEGLIGIBLE_RANGE = 50;
@@ -82,12 +80,10 @@ public class DataManager {
     void onESMAnswered(JSONObject info,String answer){
         if(info==null || answer==null)
             return;
-        esmJson = info;
-        esmAnswer = answer;
-        storeData();
+        storeData(info, answer);
     }
 
-    private void storeData(){
+    private void storeData(JSONObject esmJson,String esmAnswer){
         /* TO DO: Store relevant data in database */
         try {
             Log.i(TAG, "\n-----------------------------------------\nNo database so here you go: \n" + esmJson.getString("esm_instructions")
