@@ -1,10 +1,8 @@
 package com.aware.plugin.survey;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.net.Uri;
 import android.support.v4.content.ContextCompat;
 
@@ -13,12 +11,8 @@ import com.aware.Aware_Preferences;
 import com.aware.ESM;
 import com.aware.Locations;
 import com.aware.ui.PermissionsHandler;
-import com.aware.ui.esms.ESMFactory;
-import com.aware.ui.esms.ESM_Freetext;
-import com.aware.ui.esms.ESM_Radio;
 import com.aware.utils.Aware_Plugin;
 
-import org.json.JSONException;
 
 public class Plugin extends Aware_Plugin {
     static DataManager default_mgr = new DataManager();
@@ -107,6 +101,8 @@ public class Plugin extends Aware_Plugin {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(esmLis);
+        unregisterReceiver(locLis);
         Aware.setSetting(this, Settings.STATUS_SURVEY_PLUGIN, false);
         //Stop AWARE's instance running inside the plugin package
         Aware.stopAWARE(this);

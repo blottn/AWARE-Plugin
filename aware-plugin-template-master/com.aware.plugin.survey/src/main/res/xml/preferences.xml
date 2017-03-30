@@ -30,5 +30,10 @@
         android:persistent="true"
         android:title="How long until location data is outdated(in seconds)"
         android:summary="Every 300 seconds"/>
+    <ListPreference
+        android:defaultValue="1"
+        android:title="List preference"
+        android:entries="@array/frequency_values"
+        android:key="list_preference_1" />
 
 </PreferenceScreen>

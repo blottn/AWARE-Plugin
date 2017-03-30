@@ -3,6 +3,7 @@ package com.aware.plugin.survey;
 import android.content.Context;
 import android.content.Intent;
 import android.location.*;
+import android.nfc.Tag;
 import android.util.Log;
 
 import com.aware.ESM;
@@ -24,7 +25,8 @@ import static android.content.ContentValues.TAG;
 
 public class DataManager {
     private static Location previousLocation=null;
-
+    static Time startQuestions = null;
+    static Time stopQuestions = null;
     private Location loc = null;
     private JSONObject esmJson = null;
     private String esmAnswer = null;
@@ -65,14 +67,15 @@ public class DataManager {
     }
 
     void giveLocation(final Context context,final Location location) {
+        if(isProcessing())
+            return;
         processing = true;
         if (isNoteworthy(location)) {
-            Log.d(TAG, "Passed Location");
-            Log.d(TAG, location.toString());
             onLocationReceive(context, location);
         }
         else {
-            Log.d(TAG, "Passed non-noteworthy location");
+            processing = false;
+            printLocation(location);
         }
     }
 
@@ -87,8 +90,12 @@ public class DataManager {
     private void storeData(){
         /* TO DO: Store relevant data in database */
         try {
-            Log.d(TAG, "No database so here you go: \n" + esmJson.getString("esm_instructions")
-                    + "\nAnswer: "+ esmAnswer + "\nLocation: " + loc.getLatitude() + ", " + loc.getLongitude());
+            Log.i(TAG, "\n-----------------------------------------\nNo database so here you go: \n" + esmJson.getString("esm_instructions")
+                    + "\nAnswer: "+ esmAnswer);
+            printLocation(loc);
+            Log.i(TAG, "\n-----------------------------------------\n");
+
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -97,14 +104,12 @@ public class DataManager {
 
     private boolean isNoteworthy(Location location) {
         Log.i(TAG,"Checking if location is noteworthy");
-        if(location == null || location.getAccuracy() > TOLERABLE_ACCURACY)
-            return false;
         if(previousLocation==null){
-            Log.i(TAG,"No previous location");
+            Log.i(TAG,"Not known previous location");
             previousLocation = location;
             return true;
         }
-        if(distance(location.getLatitude(),location.getLongitude(),previousLocation.getLatitude(),
+        if(location == null || location.getAccuracy() > TOLERABLE_ACCURACY || distance(location.getLatitude(),location.getLongitude(),previousLocation.getLatitude(),
                     previousLocation.getLongitude())< NEGLIGIBLE_RANGE){ //If points are within negligible range
             Log.i(TAG,"Location was negligible");
             return false;
@@ -162,5 +167,14 @@ public class DataManager {
 
     boolean isProcessing(){
         return processing;
+    }
+
+    private void printLocation(Location loc){
+        if(loc==null){
+            Log.i(TAG, "Location was null.");
+            return;
+        }
+        Log.i(TAG,"\nPrinting Location:\n" + loc.getLatitude() + ", " + loc.getLongitude() +
+                "\nTime:"+ new Time(loc.getTime()).toString() + "\nAccuracy: "+ loc.getAccuracy());
     }
 }
