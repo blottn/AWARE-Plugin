@@ -145,7 +145,6 @@ public class Provider extends ContentProvider {
     public Uri insert(Uri uri, ContentValues initialValues) {
 
         initialiseDatabase();
-
         ContentValues values = (initialValues != null) ? new ContentValues(initialValues) : new ContentValues();
 
         database.beginTransaction();

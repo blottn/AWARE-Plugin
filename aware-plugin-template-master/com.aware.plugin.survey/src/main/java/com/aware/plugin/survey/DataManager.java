@@ -33,7 +33,7 @@ public class DataManager {
     private final int NEGLIGIBLE_RANGE = 50;
     private final int TOLERABLE_ACCURACY = 250;
 
-    public static class ProviderManager extends Thread {
+    protected static class ProviderManager extends Thread {
 
         private Provider provider;
 
@@ -51,9 +51,18 @@ public class DataManager {
                 }
             }
         }
-
         void addLocation(Location location) {
             toAdd.add(location);
+        }
+    }
+
+    public static class MarkedLocation {
+        public Location location;
+        public String name;
+
+        public MarkedLocation(String name, Location location) {
+            this.name = name;
+            this.location = location;
         }
     }
 
