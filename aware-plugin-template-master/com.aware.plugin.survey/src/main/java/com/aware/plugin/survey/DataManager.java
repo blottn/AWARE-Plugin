@@ -3,6 +3,7 @@ package com.aware.plugin.survey;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.location.*;
 import android.nfc.Tag;
 import android.util.Log;
@@ -59,8 +60,15 @@ public class DataManager {
                 }
             }
         }
+
         void addLocation(MarkedLocation location) {
             toAdd.add(location);
+        }
+
+        Cursor mostRecent() {
+            Cursor cursor = provider.query(Provider.TableOne_Data.CONTENT_URI, null, null, null, Provider.TableOne_Data.TIMESTAMP + " DESC 1");
+            cursor.moveToFirst();
+            return cursor;
         }
     }
 
@@ -161,7 +169,7 @@ public class DataManager {
             ESMFactory factory = new ESMFactory();
             factory.addESM(question);
             ESM.queueESM(context,factory.build());
-            loc = location;
+            loc = location;         // TODO change how this is passed in to be a parameter rather than a field
         } catch (JSONException e) {
             e.printStackTrace();
         }
