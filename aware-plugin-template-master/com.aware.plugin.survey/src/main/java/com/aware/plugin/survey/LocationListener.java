@@ -44,7 +44,6 @@ public class LocationListener extends BroadcastReceiver {
                     mgr.giveLocation(c, loc);
                 }
             }).start();
-
         }
         data.close();
     }

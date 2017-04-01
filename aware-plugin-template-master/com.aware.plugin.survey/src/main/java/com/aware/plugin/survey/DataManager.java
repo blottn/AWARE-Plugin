@@ -1,5 +1,6 @@
 package com.aware.plugin.survey;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.location.*;
@@ -37,7 +38,7 @@ public class DataManager {
 
         private Provider provider;
 
-        private ConcurrentLinkedQueue<Location> toAdd;
+        private ConcurrentLinkedQueue<MarkedLocation> toAdd;
 
         ProviderManager(Provider provider) {
             this.provider = provider;
@@ -47,11 +48,18 @@ public class DataManager {
         public void run() {
             while (true) {
                 if (!toAdd.isEmpty()) {
-//                    provider.insert(null, Location);    //UNF
+                    MarkedLocation data = toAdd.poll();
+                    ContentValues values = new ContentValues();
+                    values.put("Name",data.name);
+                    values.put("Latitude",data.location.getLatitude());
+                    values.put("Timestamp",data.location.getTime());
+                    values.put("Longitude",data.location.getLongitude());
+                    values.put("Accuracy",data.location.getAccuracy());
+                    provider.insert(Provider.TableOne_Data.CONTENT_URI, values);
                 }
             }
         }
-        void addLocation(Location location) {
+        void addLocation(MarkedLocation location) {
             toAdd.add(location);
         }
     }
