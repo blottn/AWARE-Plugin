@@ -54,6 +54,11 @@ public class Provider extends ContentProvider {
         public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.com.aware.plugin.template.provider.table_one"; //modify me
         public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.com.aware.plugin.template.provider.table_one"; //modify me
 
+        public static final String LATITUDE = "latitude";
+        public static final String LONGITUDE = "longitude";
+        public static final String ACCURACY = "latitude";
+        public static final String LOCATION_NAME = "name";
+
         //Note: integers and strings don't need a type prefix_
         public static final String NAME = "name";
         public static final String BIG_NUMBER = "double_big_number"; //a double_ prefix makes a MySQL DOUBLE column
@@ -111,6 +116,11 @@ public class Provider extends ContentProvider {
         tableOneHash.put(TableOne_Data.BIG_NUMBER, TableOne_Data.BIG_NUMBER);
         tableOneHash.put(TableOne_Data.PICTURE, TableOne_Data.PICTURE);
 
+        tableOneHash.put(TableOne_Data.ACCURACY, TableOne_Data.ACCURACY);
+        tableOneHash.put(TableOne_Data.LATITUDE, TableOne_Data.LATITUDE);
+        tableOneHash.put(TableOne_Data.LONGITUDE, TableOne_Data.LONGITUDE);
+        tableOneHash.put(TableOne_Data.LOCATION_NAME, TableOne_Data.LOCATION_NAME);
+
         return true;
     }
 
@@ -145,7 +155,6 @@ public class Provider extends ContentProvider {
     public Uri insert(Uri uri, ContentValues initialValues) {
 
         initialiseDatabase();
-
         ContentValues values = (initialValues != null) ? new ContentValues(initialValues) : new ContentValues();
 
         database.beginTransaction();

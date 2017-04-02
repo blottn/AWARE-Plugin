@@ -1,7 +1,9 @@
 package com.aware.plugin.survey;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.location.*;
 import android.nfc.Tag;
 import android.util.Log;
@@ -33,11 +35,11 @@ public class DataManager {
     private final int NEGLIGIBLE_RANGE = 50;
     private final int TOLERABLE_ACCURACY = 250;
 
-    public static class ProviderManager extends Thread {
+    protected static class ProviderManager extends Thread {
 
         private Provider provider;
 
-        private ConcurrentLinkedQueue<Location> toAdd;
+        private ConcurrentLinkedQueue<MarkedLocation> toAdd;
 
         ProviderManager(Provider provider) {
             this.provider = provider;
@@ -47,13 +49,36 @@ public class DataManager {
         public void run() {
             while (true) {
                 if (!toAdd.isEmpty()) {
-//                    provider.insert(null, Location);    //UNF
+                    MarkedLocation data = toAdd.poll();
+                    ContentValues values = new ContentValues();
+                    values.put("Name",data.name);
+                    values.put("Latitude",data.location.getLatitude());
+                    values.put("Timestamp",data.location.getTime());
+                    values.put("Longitude",data.location.getLongitude());
+                    values.put("Accuracy",data.location.getAccuracy());
+                    provider.insert(Provider.TableOne_Data.CONTENT_URI, values);
                 }
             }
         }
 
-        void addLocation(Location location) {
+        void addLocation(MarkedLocation location) {
             toAdd.add(location);
+        }
+
+        Cursor mostRecent() {
+            Cursor cursor = provider.query(Provider.TableOne_Data.CONTENT_URI, null, null, null, Provider.TableOne_Data.TIMESTAMP + " DESC 1");
+            cursor.moveToFirst();
+            return cursor;
+        }
+    }
+
+    public static class MarkedLocation {
+        public Location location;
+        public String name;
+
+        public MarkedLocation(String name, Location location) {
+            this.name = name;
+            this.location = location;
         }
     }
 
@@ -144,7 +169,7 @@ public class DataManager {
             ESMFactory factory = new ESMFactory();
             factory.addESM(question);
             ESM.queueESM(context,factory.build());
-            loc = location;
+            loc = location;         // TODO change how this is passed in to be a parameter rather than a field
         } catch (JSONException e) {
             e.printStackTrace();
         }
