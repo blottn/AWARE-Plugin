@@ -26,8 +26,7 @@ public class DataManager {
     private static Location previousLocation=null;
     static Time startQuestions = null;
     static Time stopQuestions = null;
-    private boolean processing = false;
-    private ConcurrentLinkedQueue<Location> toBeAnswered = new ConcurrentLinkedQueue<Location>();
+    private ConcurrentLinkedQueue<Location> toBeAnswered = new ConcurrentLinkedQueue<>();
 
     private final int NEGLIGIBLE_RANGE = 50;
     private final int TOLERABLE_ACCURACY = 250;
@@ -87,14 +86,11 @@ public class DataManager {
     }
 
     void giveLocation(final Context context,final Location location) {
-        if(isProcessing())
-            return;
-        processing = true;
+
         if (isNoteworthy(location)) {
             onLocationReceive(context, location);
         }
         else {
-            processing = false;
             printLocation(location);
         }
     }
@@ -118,7 +114,6 @@ public class DataManager {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        processing = false;
     }
 
     private boolean isNoteworthy(Location location) {
@@ -184,10 +179,6 @@ public class DataManager {
         return 0;
     }
 
-    boolean isProcessing(){
-        return processing;
-    }
-
     private void printLocation(Location loc){
         if(loc==null){
             Log.i(TAG, "Location was null.");
@@ -198,6 +189,6 @@ public class DataManager {
     }
 
     void onESMCancelled(){
-        toBeAnswered.poll(); //Remove head
+        toBeAnswered.poll(); //Remove corresponding location
     }
 }

@@ -26,11 +26,7 @@ public class LocationListener extends BroadcastReceiver {
     }
 
     public void onReceive(final Context c,final Intent intent) {
-        if(mgr.isProcessing()){
-            Log.i(TAG,"Received location but still processing previous");
-        }
-        else
-            Log.d(TAG, "Received a location broadcast");
+        Log.d(TAG, "Received a location broadcast");
         Cursor data = c.getContentResolver().query(Locations_Provider.Locations_Data.CONTENT_URI, null, null, null, Locations_Provider.Locations_Data.TIMESTAMP + " DESC LIMIT 1");
         if (data != null && data.moveToFirst()) {
             final Location loc = new Location("Listener");
