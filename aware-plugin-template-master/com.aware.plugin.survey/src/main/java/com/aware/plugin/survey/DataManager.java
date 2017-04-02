@@ -66,6 +66,32 @@ public class DataManager {
             cursor.moveToFirst();
             return cursor;
         }
+
+        Cursor getLocationsWithin(int metres, int accuracy, Location location) {
+
+            Location up, down, left, right;
+
+            up = new Location(location);
+            down = new Location(location);
+            left = new Location(location);
+            right = new Location(location);
+
+            up.setLatitude(up.getLatitude() + (((double)metres) / 111111.00) );
+            down.setLatitude(up.getLatitude() - (((double)metres) / 111111.00) );
+
+            left.setLongitude(left.getLongitude() - (((double) metres) / 111111.00) * Math.cos(left.getLatitude() * 2 * Math.PI));
+            right.setLongitude(right.getLongitude() + (((double) metres) / 111111.00) * Math.cos(right.getLatitude() * 2 * Math.PI));
+            Cursor cursor = provider.query(Provider.TableOne_Data.CONTENT_URI,
+                        null,
+                        "WHERE",
+                        new String[] {
+                                Provider.TableOne_Data.LATITUDE  + " BETWEEN " + down.getLatitude() + " " + up.getLatitude(),
+                                Provider.TableOne_Data.LONGITUDE + " BETWEEN " + left.getLatitude() + " " + right.getLatitude(),
+                                Provider.TableOne_Data.ACCURACY + "<" + accuracy
+                        },
+                        Provider.TableOne_Data.ACCURACY + " DESC 1");
+            return cursor;
+        }
     }
 
     public static class MarkedLocation {
@@ -175,8 +201,20 @@ public class DataManager {
      *                           1 = Possibly previous location(Within specified distance)
      *                           2 = Definitely previous location(Within negligible distance)
      */
-    private int getLocationType(Location loc){
-        return 0;
+    private int getLocationType(Location loc) {
+        Cursor c = provide.getLocationsWithin(50, 50, loc);
+        if (c == null || c.getCount() == 0) {
+            c = provide.getLocationsWithin(100, 100, loc);
+            if (c == null || c.getCount() == 0) {
+                return 0;
+            }
+            else {
+                return 1;
+            }
+        }
+        else {
+            return 2;
+        }
     }
 
     private void printLocation(Location loc){
