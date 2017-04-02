@@ -5,13 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.location.*;
-import android.nfc.Tag;
 import android.util.Log;
 
 import com.aware.ESM;
-import com.aware.ui.esms.ESMFactory;
-import com.aware.ui.esms.ESM_Freetext;
-import com.aware.ui.esms.ESM_Question;
+import com.aware.ui.esms.*;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,8 +26,8 @@ public class DataManager {
     private static Location previousLocation=null;
     static Time startQuestions = null;
     static Time stopQuestions = null;
-    private Location loc = null;
     private boolean processing = false;
+    private ConcurrentLinkedQueue<Location> toBeAnswered = new ConcurrentLinkedQueue<Location>();
 
     private final int NEGLIGIBLE_RANGE = 50;
     private final int TOLERABLE_ACCURACY = 250;
@@ -61,7 +58,7 @@ public class DataManager {
             }
         }
 
-        void addLocation(MarkedLocation location) {
+        void addMarkedLocation(MarkedLocation location) {
             toAdd.add(location);
         }
 
@@ -105,18 +102,19 @@ public class DataManager {
     void onESMAnswered(JSONObject info,String answer){
         if(info==null || answer==null)
             return;
-        storeData(info, answer);
+        Location location = toBeAnswered.poll();
+        storeData(info, answer, location);
     }
 
-    private void storeData(JSONObject esmJson,String esmAnswer){
-        /* TO DO: Store relevant data in database */
+    private void storeData(JSONObject esmJson,String esmAnswer,Location location){
         try {
-            Log.i(TAG, "\n-----------------------------------------\nNo database so here you go: \n" + esmJson.getString("esm_instructions")
+            Log.i(TAG, "\n-----------------------------------------\nAdding location to database:\nQuestion: "
+                    + esmJson.getString("esm_instructions")
                     + "\nAnswer: "+ esmAnswer);
-            printLocation(loc);
+            printLocation(location);
             Log.i(TAG, "\n-----------------------------------------\n");
-
-
+            MarkedLocation toStore = new MarkedLocation(esmAnswer, previousLocation);
+            provide.addMarkedLocation(toStore);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -169,7 +167,7 @@ public class DataManager {
             ESMFactory factory = new ESMFactory();
             factory.addESM(question);
             ESM.queueESM(context,factory.build());
-            loc = location;         // TODO change how this is passed in to be a parameter rather than a field
+            toBeAnswered.add(location);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -197,5 +195,9 @@ public class DataManager {
         }
         Log.i(TAG,"\nPrinting Location:\n" + loc.getLatitude() + ", " + loc.getLongitude() +
                 "\nTime:"+ new Time(loc.getTime()).toString() + "\nAccuracy: "+ loc.getAccuracy());
+    }
+
+    void onESMCancelled(){
+        toBeAnswered.poll(); //Remove head
     }
 }

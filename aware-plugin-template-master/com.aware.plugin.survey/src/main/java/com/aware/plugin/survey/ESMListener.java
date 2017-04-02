@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.util.Log;
 
+import com.aware.ESM;
 import com.aware.providers.ESM_Provider;
 import com.aware.providers.Locations_Provider;
 
@@ -30,7 +31,7 @@ public class ESMListener extends BroadcastReceiver {
         if (intent == null) {
             Log.i(TAG, "it was null");
         }
-        else {
+        else if(intent.getAction().equals(ESM.ACTION_AWARE_ESM_ANSWERED)){
             try {
                 final Cursor data = c.getContentResolver().query(ESM_Provider.ESM_Data.CONTENT_URI, null, null, null, ESM_Provider.ESM_Data.TIMESTAMP + " DESC LIMIT 1");
                 if (data != null && data.moveToFirst()) {
@@ -47,6 +48,9 @@ public class ESMListener extends BroadcastReceiver {
                 e.printStackTrace();
             }
             Log.i(TAG, "Location pinged");
+        }
+        else{
+            mgr.onESMCancelled();
         }
     }
 }

@@ -43,6 +43,8 @@ public class Plugin extends Aware_Plugin {
 
         IntentFilter esmFilter = new IntentFilter();
         esmFilter.addAction(ESM.ACTION_AWARE_ESM_ANSWERED);
+        esmFilter.addAction(ESM.ACTION_AWARE_ESM_DISMISSED);
+        esmFilter.addAction(ESM.ACTION_AWARE_ESM_EXPIRED);
         registerReceiver(esmLis, esmFilter);
 
 
