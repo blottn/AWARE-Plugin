@@ -20,6 +20,7 @@ import static android.content.ContentValues.TAG;
 
 public class ESMListener extends BroadcastReceiver {
     DataManager mgr;
+    int answersReceived = 0;
 
     public ESMListener(DataManager mgr){
         super();
@@ -27,22 +28,28 @@ public class ESMListener extends BroadcastReceiver {
     }
 
     public void onReceive(Context c, Intent intent) {
+        answersReceived++;
+        if(answersReceived!=mgr.questionsPerQueue)
+            return;
+        answersReceived=0;
         Log.i(TAG, "An ESM was answered.");
         if (intent == null) {
             Log.i(TAG, "it was null");
         }
         else if(intent.getAction().equals(ESM.ACTION_AWARE_ESM_ANSWERED)){
             try {
-                final Cursor data = c.getContentResolver().query(ESM_Provider.ESM_Data.CONTENT_URI, null, null, null, ESM_Provider.ESM_Data.TIMESTAMP + " DESC LIMIT 1");
+                final Cursor data = c.getContentResolver().query(ESM_Provider.ESM_Data.CONTENT_URI, null, null, null, ESM_Provider.ESM_Data.TIMESTAMP + " DESC LIMIT " + mgr.questionsPerQueue);
                 if (data != null && data.moveToFirst()) {
-                    final JSONObject esmInfo = new JSONObject(data.getString(data.getColumnIndex(ESM_Provider.ESM_Data.JSON)));
-                    final String str = data.getString(data.getColumnIndex(ESM_Provider.ESM_Data.ANSWER));
-                    new Thread(new Runnable() {
-                        public void run()
-                        {
-                            mgr.onESMAnswered(esmInfo,str);
-                        }
-                    }).start();
+                    for(int i=0;i<mgr.questionsPerQueue;i++) {
+                        final JSONObject esmInfo = new JSONObject(data.getString(data.getColumnIndex(ESM_Provider.ESM_Data.JSON)));
+                        final String s=data.getString(data.getColumnIndex(ESM_Provider.ESM_Data.ANSWER));
+                        new Thread(new Runnable() {
+                            public void run() {
+                                mgr.onESMAnswered(esmInfo, s);
+                            }
+                        }).start();
+                        data.moveToNext();
+                    }
                 }
                 data.close();
             } catch (JSONException e) {
