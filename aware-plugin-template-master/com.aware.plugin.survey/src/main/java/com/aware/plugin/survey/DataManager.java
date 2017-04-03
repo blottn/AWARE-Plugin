@@ -54,13 +54,13 @@ public class DataManager {
             while (true) {
                 if (!toAdd.isEmpty()) {
                     Entry data = toAdd.poll();
-                    Log.i(TAG, "inserting: " + data.location.toString());
+                    Log.i(TAG, "inserting: " + data.values.get("name"));
                     ContentValues values = new ContentValues();
-                    values.put(Provider.TableOne_Data.LOCATION_NAME, data.name);
-                    values.put(Provider.TableOne_Data.LATITUDE, data.location.getLatitude());
-                    values.put(Provider.TableOne_Data.TIMESTAMP, data.location.getTime());
-                    values.put(Provider.TableOne_Data.LONGITUDE, data.location.getLongitude());
-                    values.put(Provider.TableOne_Data.ACCURACY, (int) data.location.getAccuracy());
+                    values.put(Provider.TableOne_Data.LOCATION_NAME, data.values.get("name"));
+                    values.put(Provider.TableOne_Data.LATITUDE, Integer.parseInt(data.values.get("lat")));
+                    values.put(Provider.TableOne_Data.TIMESTAMP, Integer.parseInt(data.values.get("time")));
+                    values.put(Provider.TableOne_Data.LONGITUDE, Integer.parseInt(data.values.get("long")));
+                    values.put(Provider.TableOne_Data.ACCURACY, Integer.parseInt(data.values.get("accuracy")));
 //                    provider.insert(Provider.TableOne_Data.CONTENT_URI, values);
                     Log.i(TAG, "Stored a location in the database");
                 }
@@ -92,7 +92,7 @@ public class DataManager {
             left.setLongitude(left.getLongitude() - (((double) metres) / 111111.00) * Math.cos(left.getLatitude() * 2 * Math.PI));
             right.setLongitude(right.getLongitude() + (((double) metres) / 111111.00) * Math.cos(right.getLatitude() * 2 * Math.PI));
             Cursor cursor = Plugin.context.getContentResolver().query(Provider.TableOne_Data.CONTENT_URI,
-                        new String[] {Provider.TableOne_Data.LOCATION_NAME},
+                        new String[] {Provider.TableOne_Data.LOCATION_NAME, Provider.TableOne_Data.LONGITUDE, Provider.TableOne_Data.LATITUDE, Provider.TableOne_Data.ACCURACY},
                             "(" + Provider.TableOne_Data.LATITUDE  + " BETWEEN " + down.getLatitude() + " AND " + up.getLatitude() + ") AND " +
                             "(" + Provider.TableOne_Data.LONGITUDE + " BETWEEN " + left.getLatitude() + " AND " + right.getLatitude() + ")",
 //                            Provider.TableOne_Data.ACCURACY + "<" + accuracy,
