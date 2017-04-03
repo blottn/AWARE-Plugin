@@ -39,6 +39,7 @@ public class DataManager {
 
         ProviderManager(Provider provider) {
             this.provider = provider;
+            toAdd = new ConcurrentLinkedQueue<MarkedLocation>();
         }
 
         @Override

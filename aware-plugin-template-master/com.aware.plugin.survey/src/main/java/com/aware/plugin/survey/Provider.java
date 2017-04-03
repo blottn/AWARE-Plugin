@@ -12,6 +12,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.util.Log;
 
 import com.aware.Aware;
@@ -69,6 +70,10 @@ public class Provider extends ContentProvider {
     private static final String DB_TBL_TEMPLATE_FIELDS =
             TableOne_Data._ID + " integer primary key autoincrement," +
                     TableOne_Data.TIMESTAMP + " real default 0," +
+                    TableOne_Data.LONGITUDE + " real default 0," +
+                    TableOne_Data.LATITUDE + " real default 0," +
+                    TableOne_Data.NAME + " text default ''," +
+                    TableOne_Data.ACCURACY + " integer default 0," +
                     TableOne_Data.DEVICE_ID + " text default ''," +
                     TableOne_Data.NAME + " text default ''," +
                     TableOne_Data.BIG_NUMBER + " real default 0," +
