@@ -8,7 +8,6 @@ import java.util.HashMap;
 
 class Entry {
     HashMap<String, String> values;
-    //String[] keys={"name","frequency","activity","with","lat","lon","accuracy","range"};
     String name = "name";
     String frequency = "frequency";
     String activity = "activity";
