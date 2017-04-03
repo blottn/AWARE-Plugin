@@ -87,7 +87,7 @@ public class DataManager {
 
             left.setLongitude(left.getLongitude() - (((double) metres) / 111111.00) * Math.cos(left.getLatitude() * 2 * Math.PI));
             right.setLongitude(right.getLongitude() + (((double) metres) / 111111.00) * Math.cos(right.getLatitude() * 2 * Math.PI));
-            Cursor cursor = Plugin.context.getContentResolver().query(Provider.TableOne_Data.CONTENT_URI,
+            Cursor cursor ;/*= Plugin.context.getContentResolver().query(Provider.TableOne_Data.CONTENT_URI,
                         new String[] {Provider.TableOne_Data.LATITUDE, Provider.TableOne_Data.LONGITUDE, Provider.TableOne_Data.ACCURACY, Provider.TableOne_Data.LOCATION_NAME },
                         " WHERE ",
                         new String[] {
@@ -95,7 +95,7 @@ public class DataManager {
                                 Provider.TableOne_Data.LONGITUDE + " BETWEEN " + left.getLatitude() + " " + right.getLatitude(),
                                 Provider.TableOne_Data.ACCURACY + "<" + accuracy
                         },
-                        Provider.TableOne_Data.TIMESTAMP + " DESC LIMIT 1");
+                        Provider.TableOne_Data.TIMESTAMP + " DESC LIMIT 1");*/
             return cursor;
         }
     }
