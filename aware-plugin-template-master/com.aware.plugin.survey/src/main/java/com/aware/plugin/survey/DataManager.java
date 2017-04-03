@@ -8,6 +8,7 @@ import android.location.*;
 import android.util.Log;
 
 import com.aware.ESM;
+import com.aware.providers.Locations_Provider;
 import com.aware.ui.esms.*;
 
 import org.json.JSONException;
@@ -38,6 +39,7 @@ public class DataManager {
         private ConcurrentLinkedQueue<MarkedLocation> toAdd;
 
         ProviderManager(Provider provider) {
+
             this.provider = provider;
             toAdd = new ConcurrentLinkedQueue<MarkedLocation>();
         }
@@ -47,13 +49,14 @@ public class DataManager {
             while (true) {
                 if (!toAdd.isEmpty()) {
                     MarkedLocation data = toAdd.poll();
+                    Log.i(TAG, "inserting: " + data.location.toString());
                     ContentValues values = new ContentValues();
-                    values.put("Name",data.name);
-                    values.put("Latitude",data.location.getLatitude());
-                    values.put("Timestamp",data.location.getTime());
-                    values.put("Longitude",data.location.getLongitude());
-                    values.put("Accuracy",data.location.getAccuracy());
-                    provider.insert(Provider.TableOne_Data.CONTENT_URI, values);
+                    values.put(Provider.TableOne_Data.LOCATION_NAME,data.name);
+                    values.put(Provider.TableOne_Data.LATITUDE,data.location.getLatitude());
+                    values.put(Provider.TableOne_Data.TIMESTAMP,data.location.getTime());
+                    values.put(Provider.TableOne_Data.LONGITUDE,data.location.getLongitude());
+                    values.put(Provider.TableOne_Data.ACCURACY, (int)data.location.getAccuracy());
+//                    provider.insert(Provider.TableOne_Data.CONTENT_URI, values);
                     Log.i(TAG, "Stored a location in the database");
                 }
             }
@@ -83,16 +86,17 @@ public class DataManager {
 
             left.setLongitude(left.getLongitude() - (((double) metres) / 111111.00) * Math.cos(left.getLatitude() * 2 * Math.PI));
             right.setLongitude(right.getLongitude() + (((double) metres) / 111111.00) * Math.cos(right.getLatitude() * 2 * Math.PI));
-            Cursor cursor = provider.query(Provider.TableOne_Data.CONTENT_URI,
+            /*Cursor cursor = Plugin.context.getContentResolver().query(Provider.TableOne_Data.CONTENT_URI,
+                        new String[] {Provider.TableOne_Data.LATITUDE, Provider.TableOne_Data.LONGITUDE, Provider.TableOne_Data.ACCURACY, Provider.TableOne_Data.LOCATION_NAME },
                         null,
-                        "WHERE",
+                        null,
                         new String[] {
                                 Provider.TableOne_Data.LATITUDE  + " BETWEEN " + down.getLatitude() + " " + up.getLatitude(),
-                                Provider.TableOne_Data.LONGITUDE + " BETWEEN " + left.getLatitude() + " " + right.getLatitude(),
+                                Provider.TableOne_Data.LONGITUDE + " BETWEEN " + left.getLatitude() + " " + right.getLatitude()
                                 Provider.TableOne_Data.ACCURACY + "<" + accuracy
                         },
-                        Provider.TableOne_Data.ACCURACY + " DESC 1");
-            return cursor;
+                        Provider.TableOne_Data.TIMESTAMP + " DESC LIMIT 1"); */
+            return null;
         }
     }
 
@@ -111,24 +115,11 @@ public class DataManager {
     //default constructor should be replaced with more useful constructor in future
     DataManager() {
         provide.start();
-
-        //Store some sample values in the database
-        Location sample;
-        sample = new Location("sample provider");
-        sample.setAccuracy(10);
-        sample.setTime(10000000);
-        sample.setLatitude(53);
-        sample.setLongitude(53);
-        provide.addMarkedLocation(new MarkedLocation("hello world", sample));
-        Cursor c = provide.mostRecent();
-        for (String s : c.getColumnNames()) {
-            Log.i(TAG, s);
-        }
-        Log.i(TAG, "" + c.getCount());
     }
 
     void giveLocation(final Context context,final Location location) {
-
+        //TODO remove hardcoded insert
+//        provide.addMarkedLocation(new MarkedLocation("hello world", location));
         if (isNoteworthy(location)) {
             onLocationReceive(context, location);
         }
@@ -183,7 +174,7 @@ public class DataManager {
         return (int)(1000* 12742 * Math.asin(Math.sqrt(a))); // 2 * R; R = 6371 km
     }
 
-    private void onLocationReceive(Context context,Location location){
+    private void onLocationReceive(Context context, Location location){
 
         try {
             int locType = getLocationType(location);

@@ -41,6 +41,7 @@ public class Provider extends ContentProvider {
 
     //These are columns that we need to sync data, don't change this!
     public interface AWAREColumns extends BaseColumns {
+
         String _ID = "_id";
         String TIMESTAMP = "timestamp";
         String DEVICE_ID = "device_id";
@@ -57,7 +58,7 @@ public class Provider extends ContentProvider {
 
         public static final String LATITUDE = "double_latitude";
         public static final String LONGITUDE = "double_longitude";
-        public static final String ACCURACY = "latitude";
+        public static final String ACCURACY = "accuracy";
         public static final String LOCATION_NAME = "location_name";
 
         //Note: integers and strings don't need a type prefix_
@@ -73,9 +74,9 @@ public class Provider extends ContentProvider {
                     TableOne_Data.LONGITUDE + " real default 0," +
                     TableOne_Data.LATITUDE + " real default 0," +
                     TableOne_Data.LOCATION_NAME + " text default ''," +
-                    TableOne_Data.ACCURACY + " integer default 0," +
+                    TableOne_Data.ACCURACY + " int default 0," +
                     TableOne_Data.DEVICE_ID + " text default ''," +
-                    TableOne_Data.LOCATION_NAME + " text default ''," +
+                    TableOne_Data.NAME + " text default ''," +
                     TableOne_Data.BIG_NUMBER + " real default 0," +
                     TableOne_Data.PICTURE + " blob default null";
 

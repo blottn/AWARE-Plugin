@@ -1,5 +1,6 @@
 package com.aware.plugin.survey;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -15,13 +16,16 @@ import com.aware.utils.Aware_Plugin;
 
 
 public class Plugin extends Aware_Plugin {
+
+    static Context context;
+
     static DataManager default_mgr = new DataManager();
     static LocationListener locLis = new LocationListener(default_mgr);
     static ESMListener esmLis = new ESMListener(default_mgr);
     @Override
     public void onCreate() {
         super.onCreate();
-
+        context = this.getApplicationContext();
         TAG = "AWARE::"+getResources().getString(R.string.app_name);
 
         /**

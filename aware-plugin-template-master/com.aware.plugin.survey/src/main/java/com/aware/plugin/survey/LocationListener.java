@@ -34,12 +34,7 @@ public class LocationListener extends BroadcastReceiver {
             loc.setLongitude(data.getDouble(data.getColumnIndex(Locations_Provider.Locations_Data.LONGITUDE)));
             loc.setAccuracy(data.getInt(data.getColumnIndex(Locations_Provider.Locations_Data.ACCURACY)));
             loc.setTime(data.getLong(data.getColumnIndex(Locations_Provider.Locations_Data.TIMESTAMP)));
-            new Thread(new Runnable() {
-                public void run()
-                {
-                    mgr.giveLocation(c, loc);
-                }
-            }).start();
+            mgr.giveLocation(c, loc);
         }
         data.close();
     }
