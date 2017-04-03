@@ -80,9 +80,6 @@ public class Provider extends ContentProvider {
                     TableOne_Data.BIG_NUMBER + " real default 0," +
                     TableOne_Data.PICTURE + " blob default null";
 
-    /**
-     * Share the fields with AWARE so we can replicate the table schema on the server
-     */
     public static final String[] TABLES_FIELDS = {
             DB_TBL_TEMPLATE_FIELDS
     };
