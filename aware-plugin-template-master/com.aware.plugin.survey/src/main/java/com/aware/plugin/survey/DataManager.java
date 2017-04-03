@@ -80,7 +80,6 @@ public class DataManager {
         Cursor getLocationsWithin(int metres, int accuracy, Location location) {
 
             Location up, down, left, right;
-
             up = new Location(location);
             down = new Location(location);
             left = new Location(location);
@@ -102,16 +101,6 @@ public class DataManager {
         }
     }
 
-    public static class MarkedLocation {
-        public Location location;
-        public String name;
-
-        public MarkedLocation(String name, Location location) {
-            this.name = name;
-            this.location = location;
-        }
-    }
-
     private ProviderManager provide = new ProviderManager(new Provider());
 
     //default constructor should be replaced with more useful constructor in future
@@ -125,52 +114,6 @@ public class DataManager {
         if (isNoteworthy(location)) {
             onLocationReceive(context, location);
         }
-    }
-
-    void onESMAnswered(JSONObject info, String answer) {
-        if (info == null || answer == null)
-            return;
-        Entry entry = toBeAnswered.poll();
-        storeData(info, answer, entry);
-    }
-
-    private void storeData(JSONObject esmJson, String esmAnswer, Entry entry) {
-        try {
-            String instructions = esmJson.getString("esm_instructions");
-            if (instructions.equals(NEW_QUESTION_1)){
-                //Setting name value
-                entry.put(entry.name,esmAnswer);
-            }
-            else if (instructions.equals(NEW_QUESTION_2)) {
-                //Setting frequency value
-                entry.put(entry.frequency,esmAnswer);
-            }
-            else if (instructions.equals(PREV_QUESTION_1)) {
-                //Setting activity value
-                entry.put(entry.activity,esmAnswer);
-            }
-            else if (instructions.equals(PREV_QUESTION_2)) {
-                //Setting with value
-                entry.put(entry.with,esmAnswer);
-            }
-            else
-                return;
-            provide.addEntry(entry);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            Log.i(TAG, "\n-----------------------------------------\n" +
-                    "Adding location to database:\nQuestion: "
-                    + esmJson.getString("esm_instructions")
-                    + "\nAnswer: "+ esmAnswer);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        printEntry(entry);
-            Log.i(TAG, "\n-----------------------------------------\n");
     }
 
     private boolean isNoteworthy(Location location) {
@@ -191,17 +134,7 @@ public class DataManager {
         return true;
     }
 
-    private int distance(double lat1, double lon1, double lat2, double lon2) {
-        double p = 0.017453292519943295;    // Math.PI / 180
-        double a = 0.5 - Math.cos((lat2 - lat1) * p) / 2 +
-                Math.cos(lat1 * p) * Math.cos(lat2 * p) *
-                        (1 - Math.cos((lon2 - lon1) * p)) / 2;
-
-        return (int) (1000 * 12742 * Math.asin(Math.sqrt(a))); // 2 * R; R = 6371 km
-    }
-
     private void onLocationReceive(Context context, Location location) {
-
         try {
             int locType = getLocationType(location);
             switch (locType) {
@@ -278,12 +211,13 @@ public class DataManager {
             toBeAnswered.add(new Entry(location));
     }
 
+    void onESMAnswered(JSONObject info, String answer) {
+        if (info == null || answer == null)
+            return;
+        Entry entry = toBeAnswered.poll();
+        storeData(info, answer, entry);
+    }
 
-    /**
-     * @param loc received location
-     * @return Type of location: 0 = New(Not within previous location radius)
-     * 1 = Definitely previous location(Within negligible distance)
-     */
     private int getLocationType(Location loc) {
         Cursor c = provide.getLocationsWithin(50, 50, loc);
         Log.i(TAG, "Number of nearby locations: " +c.getCount());
@@ -295,6 +229,52 @@ public class DataManager {
         }
     }
 
+    private void storeData(JSONObject esmJson, String esmAnswer, Entry entry) {
+        try {
+            String instructions = esmJson.getString("esm_instructions");
+            if (instructions.equals(NEW_QUESTION_1)){
+                //Setting name value
+                entry.put(entry.name,esmAnswer);
+            }
+            else if (instructions.equals(NEW_QUESTION_2)) {
+                //Setting frequency value
+                entry.put(entry.frequency,esmAnswer);
+            }
+            else if (instructions.equals(PREV_QUESTION_1)) {
+                //Setting activity value
+                entry.put(entry.activity,esmAnswer);
+            }
+            else if (instructions.equals(PREV_QUESTION_2)) {
+                //Setting with value
+                entry.put(entry.with,esmAnswer);
+            }
+            else
+                return;
+            provide.addEntry(entry);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Log.i(TAG, "\n-----------------------------------------\n" +
+                    "Adding location to database:\nQuestion: "
+                    + esmJson.getString("esm_instructions")
+                    + "\nAnswer: "+ esmAnswer);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        printEntry(entry);
+        Log.i(TAG, "\n-----------------------------------------\n");
+    }
+
+
+
+    void onESMCancelled() {
+        Log.i(TAG, "ESM cancelled");
+        toBeAnswered.poll(); //Remove corresponding location
+    }
+
     private void printEntry(Entry loc) {
         if (loc == null) {
             Log.i(TAG, "Location was null.");
@@ -304,8 +284,12 @@ public class DataManager {
                 "\nTime:" + loc.get(loc.time)+ "\nAccuracy: " + loc.get(loc.accuracy));
     }
 
-    void onESMCancelled() {
-        Log.i(TAG, "ESM cancelled");
-        toBeAnswered.poll(); //Remove corresponding location
+    private int distance(double lat1, double lon1, double lat2, double lon2) {
+        double p = 0.017453292519943295;    // Math.PI / 180
+        double a = 0.5 - Math.cos((lat2 - lat1) * p) / 2 +
+                Math.cos(lat1 * p) * Math.cos(lat2 * p) *
+                        (1 - Math.cos((lon2 - lon1) * p)) / 2;
+
+        return (int) (1000 * 12742 * Math.asin(Math.sqrt(a))); // 2 * R; R = 6371 km
     }
 }

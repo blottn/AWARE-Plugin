@@ -9,6 +9,7 @@ import java.util.HashMap;
  */
 
 class Entry {
+    Location location = null;
     HashMap<String, String> values;
     String name = "name";
     String frequency = "frequency";
@@ -21,12 +22,17 @@ class Entry {
     String time = "time";
 
     public Entry(Location loc){
+        location = loc;
         values = new HashMap<>();
         values.put(lat,loc.getLatitude()+"");
         values.put(lon,loc.getLongitude()+"");
         values.put(accuracy, loc.getAccuracy() + "");
-        values.put(range,"30"); //Default range of location
+        values.put(range,"20"); //Default range of location
         values.put(time,new Time(loc.getTime()).toString());
+        values.put(name, "null");
+        values.put(frequency, "null");
+        values.put(activity, "null");
+        values.put(activity, "null");
     }
 
     public void put(String key,String val){
