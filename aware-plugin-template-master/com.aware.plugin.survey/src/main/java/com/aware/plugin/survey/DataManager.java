@@ -53,6 +53,7 @@ public class DataManager {
                     values.put("Longitude",data.location.getLongitude());
                     values.put("Accuracy",data.location.getAccuracy());
                     provider.insert(Provider.TableOne_Data.CONTENT_URI, values);
+                    Log.i(TAG, "Stored a location in the database");
                 }
             }
         }
@@ -104,11 +105,25 @@ public class DataManager {
         }
     }
 
-    private static ProviderManager provide = new ProviderManager(new Provider());
+    private ProviderManager provide = new ProviderManager(new Provider());
 
     //default constructor should be replaced with more useful constructor in future
     DataManager() {
+        provide.start();
 
+        //Store some sample values in the database
+        Location sample;
+        sample = new Location("sample provider");
+        sample.setAccuracy(10);
+        sample.setTime(10000000);
+        sample.setLatitude(53);
+        sample.setLongitude(53);
+        provide.addMarkedLocation(new MarkedLocation("hello world", sample));
+        Cursor c = provide.mostRecent();
+        for (String s : c.getColumnNames()) {
+            Log.i(TAG, s);
+        }
+        Log.i(TAG, "" + c.getCount());
     }
 
     void giveLocation(final Context context,final Location location) {
@@ -168,6 +183,7 @@ public class DataManager {
     }
 
     private void onLocationReceive(Context context,Location location){
+
         try {
             int locType = getLocationType(location);
             switch (locType){
