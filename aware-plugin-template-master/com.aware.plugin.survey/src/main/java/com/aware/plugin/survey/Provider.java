@@ -24,7 +24,7 @@ public class Provider extends ContentProvider {
 
     public static String AUTHORITY = "com.aware.plugin.template.provider.xxx"; //change to package.provider.your_plugin_name
 
-    public static final int DATABASE_VERSION = 1; //increase this if you make changes to the database structure, i.e., rename columns, etc.
+    public static final int DATABASE_VERSION = 2; //increase this if you make changes to the database structure, i.e., rename columns, etc.
     public static final String DATABASE_NAME = "plugin_template.db"; //the database filename, use plugin_xxx for plugins.
 
     //Add here your database table names, as many as you need
@@ -55,10 +55,10 @@ public class Provider extends ContentProvider {
         public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.com.aware.plugin.template.provider.table_one"; //modify me
         public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.com.aware.plugin.template.provider.table_one"; //modify me
 
-        public static final String LATITUDE = "latitude";
-        public static final String LONGITUDE = "longitude";
+        public static final String LATITUDE = "double_latitude";
+        public static final String LONGITUDE = "double_longitude";
         public static final String ACCURACY = "latitude";
-        public static final String LOCATION_NAME = "name";
+        public static final String LOCATION_NAME = "location_name";
 
         //Note: integers and strings don't need a type prefix_
         public static final String NAME = "name";
@@ -72,10 +72,10 @@ public class Provider extends ContentProvider {
                     TableOne_Data.TIMESTAMP + " real default 0," +
                     TableOne_Data.LONGITUDE + " real default 0," +
                     TableOne_Data.LATITUDE + " real default 0," +
-                    TableOne_Data.NAME + " text default ''," +
+                    TableOne_Data.LOCATION_NAME + " text default ''," +
                     TableOne_Data.ACCURACY + " integer default 0," +
                     TableOne_Data.DEVICE_ID + " text default ''," +
-                    TableOne_Data.NAME + " text default ''," +
+                    TableOne_Data.LOCATION_NAME + " text default ''," +
                     TableOne_Data.BIG_NUMBER + " real default 0," +
                     TableOne_Data.PICTURE + " blob default null";
 
