@@ -43,11 +43,11 @@ public class ESMListener extends BroadcastReceiver {
                     for(int i=0;i<mgr.questionsPerQueue;i++) {
                         final JSONObject esmInfo = new JSONObject(data.getString(data.getColumnIndex(ESM_Provider.ESM_Data.JSON)));
                         final String s=data.getString(data.getColumnIndex(ESM_Provider.ESM_Data.ANSWER));
-                        new Thread(new Runnable() {
-                            public void run() {
+//                        new Thread(new Runnable() {
+//                            public void run() {
                                 mgr.onESMAnswered(esmInfo, s);
-                            }
-                        }).start();
+//                            }
+//                        }).start();
                         data.moveToNext();
                     }
                 }
