@@ -124,8 +124,6 @@ public class DataManager {
 //        provide.addMarkedLocation(new MarkedLocation("hello world", location));
         if (isNoteworthy(location)) {
             onLocationReceive(context, location);
-        } else {
-            printLocation(location);
         }
     }
 
@@ -157,24 +155,22 @@ public class DataManager {
             }
             else
                 return;
-
+            provide.addEntry(entry);
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
-//        try {
-//            Log.i(TAG, "\n-----------------------------------------\n" +
-//                    "Adding location to database:\nQuestion: "
-//                    + esmJson.getString("esm_instructions")
-//                    + "\nAnswer: "+ esmAnswer);
-//            printLocation(location);
-//            Log.i(TAG, "\n-----------------------------------------\n");
-//
-//            MarkedLocation toStore = new MarkedLocation(esmAnswer, location);
-//            provide.addMarkedLocation(toStore);
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
+
+        try {
+            Log.i(TAG, "\n-----------------------------------------\n" +
+                    "Adding location to database:\nQuestion: "
+                    + esmJson.getString("esm_instructions")
+                    + "\nAnswer: "+ esmAnswer);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        printEntry(entry);
+            Log.i(TAG, "\n-----------------------------------------\n");
     }
 
     private boolean isNoteworthy(Location location) {
@@ -218,7 +214,6 @@ public class DataManager {
                 default:
                     break;
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -300,13 +295,13 @@ public class DataManager {
         }
     }
 
-    private void printLocation(Location loc) {
+    private void printEntry(Entry loc) {
         if (loc == null) {
             Log.i(TAG, "Location was null.");
             return;
         }
-        Log.i(TAG, "\nPrinting Location:\n" + loc.getLatitude() + ", " + loc.getLongitude() +
-                "\nTime:" + new Time(loc.getTime()).toString() + "\nAccuracy: " + loc.getAccuracy());
+        Log.i(TAG, "\n" + loc.get(loc.lat) + ", " + loc.get(loc.lon)+
+                "\nTime:" + loc.get(loc.time)+ "\nAccuracy: " + loc.get(loc.accuracy));
     }
 
     void onESMCancelled() {

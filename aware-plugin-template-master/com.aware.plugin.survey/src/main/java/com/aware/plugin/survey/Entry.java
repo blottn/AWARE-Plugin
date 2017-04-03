@@ -1,6 +1,8 @@
 package com.aware.plugin.survey;
 
 import android.location.Location;
+
+import java.sql.Time;
 import java.util.HashMap;
 /**
  * Created by ronan on 03/04/2017.
@@ -16,6 +18,7 @@ class Entry {
     String lon = "lon";
     String accuracy = "accuracy";
     String range = "range";
+    String time = "time";
 
     public Entry(Location loc){
         values = new HashMap<>();
@@ -23,9 +26,14 @@ class Entry {
         values.put(lon,loc.getLongitude()+"");
         values.put(accuracy, loc.getAccuracy() + "");
         values.put(range,"30"); //Default range of location
+        values.put(time,new Time(loc.getTime()).toString());
     }
 
     public void put(String key,String val){
         values.put(key,val);
+    }
+
+    public String get(String key){
+        return values.get(key);
     }
 }
