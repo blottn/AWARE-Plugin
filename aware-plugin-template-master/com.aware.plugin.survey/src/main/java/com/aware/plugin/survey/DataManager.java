@@ -41,7 +41,7 @@ public class DataManager {
 
         private Provider provider;
 
-        private ConcurrentLinkedQueue<MarkedLocation> toAdd;
+        private ConcurrentLinkedQueue<Entry> toAdd;
 
         ProviderManager(Provider provider) {
 
@@ -53,7 +53,7 @@ public class DataManager {
         public void run() {
             while (true) {
                 if (!toAdd.isEmpty()) {
-                    MarkedLocation data = toAdd.poll();
+                    Entry data = toAdd.poll();
                     Log.i(TAG, "inserting: " + data.location.toString());
                     ContentValues values = new ContentValues();
                     values.put(Provider.TableOne_Data.LOCATION_NAME, data.name);
@@ -67,7 +67,7 @@ public class DataManager {
             }
         }
 
-        void addMarkedLocation(MarkedLocation location) {
+        void addEntry(Entry location) {
             toAdd.add(location);
         }
 
@@ -138,17 +138,26 @@ public class DataManager {
 
     private void storeData(JSONObject esmJson, String esmAnswer, Entry entry) {
         try {
-            String instruc = esmJson.getString("esm_instructions");
-            if (instruc.equals(NEW_QUESTION_1)){
-
-            } else if (instruc.equals(NEW_QUESTION_2)) {
-
-            } else if (instruc.equals(PREV_QUESTION_1)) {
-
-            } else if (instruc.equals(PREV_QUESTION_2)) {
-
-            } else
+            String instructions = esmJson.getString("esm_instructions");
+            if (instructions.equals(NEW_QUESTION_1)){
+                //Setting name value
+                entry.put(entry.name,esmAnswer);
+            }
+            else if (instructions.equals(NEW_QUESTION_2)) {
+                //Setting frequency value
+                entry.put(entry.frequency,esmAnswer);
+            }
+            else if (instructions.equals(PREV_QUESTION_1)) {
+                //Setting activity value
+                entry.put(entry.activity,esmAnswer);
+            }
+            else if (instructions.equals(PREV_QUESTION_2)) {
+                //Setting with value
+                entry.put(entry.with,esmAnswer);
+            }
+            else
                 return;
+
 
         } catch (JSONException e) {
             e.printStackTrace();
