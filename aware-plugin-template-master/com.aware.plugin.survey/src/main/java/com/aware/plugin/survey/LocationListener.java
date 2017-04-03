@@ -8,6 +8,7 @@ import android.location.Location;
 import android.util.Log;
 
 import com.aware.providers.Accelerometer_Provider;
+import com.aware.providers.ESM_Provider;
 import com.aware.providers.Locations_Provider;
 
 import static android.content.ContentValues.TAG;
@@ -34,7 +35,12 @@ public class LocationListener extends BroadcastReceiver {
             loc.setLongitude(data.getDouble(data.getColumnIndex(Locations_Provider.Locations_Data.LONGITUDE)));
             loc.setAccuracy(data.getInt(data.getColumnIndex(Locations_Provider.Locations_Data.ACCURACY)));
             loc.setTime(data.getLong(data.getColumnIndex(Locations_Provider.Locations_Data.TIMESTAMP)));
-            mgr.giveLocation(c, loc);
+            new Thread(new Runnable() {
+                public void run()
+                {
+                    mgr.giveLocation(c, loc);
+                }
+            }).start();
         }
         data.close();
     }
