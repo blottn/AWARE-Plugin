@@ -34,7 +34,7 @@ public class DataManager {
     private ConcurrentLinkedQueue<Entry> toBeAnswered = new ConcurrentLinkedQueue<>();
     int questionsPerQueue;
 
-    private final int NEGLIGIBLE_RANGE = 30;
+    private final int NEGLIGIBLE_RANGE = 5;
     private final int TOLERABLE_ACCURACY = 250;
 
     protected static class ProviderManager extends Thread {
@@ -91,15 +91,13 @@ public class DataManager {
 
             left.setLongitude(left.getLongitude() - (((double) metres) / 111111.00) * Math.cos(left.getLatitude() * 2 * Math.PI));
             right.setLongitude(right.getLongitude() + (((double) metres) / 111111.00) * Math.cos(right.getLatitude() * 2 * Math.PI));
-            Cursor cursor = null;/*= Plugin.context.getContentResolver().query(Provider.TableOne_Data.CONTENT_URI,
-                        new String[] {Provider.TableOne_Data.LATITUDE, Provider.TableOne_Data.LONGITUDE, Provider.TableOne_Data.ACCURACY, Provider.TableOne_Data.LOCATION_NAME },
-                        " WHERE ",
-                        new String[] {
-                                Provider.TableOne_Data.LATITUDE  + " BETWEEN " + down.getLatitude() + " " + up.getLatitude(),
-                                Provider.TableOne_Data.LONGITUDE + " BETWEEN " + left.getLatitude() + " " + right.getLatitude(),
-                                Provider.TableOne_Data.ACCURACY + "<" + accuracy
-                        },
-                        Provider.TableOne_Data.TIMESTAMP + " DESC LIMIT 1");*/
+            Cursor cursor = Plugin.context.getContentResolver().query(Provider.TableOne_Data.CONTENT_URI,
+                        new String[] {Provider.TableOne_Data.LOCATION_NAME},
+                            "(" + Provider.TableOne_Data.LATITUDE  + " BETWEEN " + down.getLatitude() + " AND " + up.getLatitude() + ") AND " +
+                            "(" + Provider.TableOne_Data.LONGITUDE + " BETWEEN " + left.getLatitude() + " AND " + right.getLatitude() + ")",
+//                            Provider.TableOne_Data.ACCURACY + "<" + accuracy,
+                        null,
+                        Provider.TableOne_Data.TIMESTAMP + " DESC LIMIT 1");
             return cursor;
         }
     }
@@ -232,6 +230,7 @@ public class DataManager {
                 .setSubmitButton("OK");
         factory1.addESM(q1);
         q2.addRadio("Daily")
+
                 .addRadio("Weekly")
                 .addRadio("Monthly")
                 .addRadio("Less Often")
@@ -282,7 +281,9 @@ public class DataManager {
      * 1 = Definitely previous location(Within negligible distance)
      */
     private int getLocationType(Location loc) {
-        Cursor c = provide.getLocationsWithin(NEGLIGIBLE_RANGE, NEGLIGIBLE_RANGE, loc);
+        Cursor c = provide.getLocationsWithin(50, 50, loc);
+        Log.i(TAG, "Number of nearby locations: " +c.getCount());
+
         if (c == null || c.getCount() == 0) {
             return 0;
         } else {
