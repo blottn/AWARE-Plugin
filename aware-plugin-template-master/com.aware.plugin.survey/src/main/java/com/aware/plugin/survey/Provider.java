@@ -22,10 +22,10 @@ import java.util.HashMap;
 
 public class Provider extends ContentProvider {
 
-    public static String AUTHORITY = "com.aware.plugin.template.provider.xxx"; //change to package.provider.your_plugin_name
+    public static String AUTHORITY = "com.aware.plugin.template.provider.location_survey"; //change to package.provider.your_plugin_name
 
     public static final int DATABASE_VERSION = 2; //increase this if you make changes to the database structure, i.e., rename columns, etc.
-    public static final String DATABASE_NAME = "plugin_template.db"; //the database filename, use plugin_xxx for plugins.
+    public static final String DATABASE_NAME = "location_survey.db"; //the database filename, use plugin_xxx for plugins.
 
     //Add here your database table names, as many as you need
     public static final String DB_TBL_TEMPLATE = "table_one";
@@ -102,7 +102,7 @@ public class Provider extends ContentProvider {
     @Override
     public boolean onCreate() {
         //This is a hack to allow providers to be reusable in any application/plugin by making the authority dynamic using the package name of the parent app
-        AUTHORITY = getContext().getPackageName() + ".provider.xxx"; //make sure xxx matches the first string in this class
+        AUTHORITY = getContext().getPackageName() + ".provider.location_survey"; //make sure xxx matches the first string in this class
 
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
