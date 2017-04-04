@@ -70,6 +70,17 @@ public class DataManager {
         }
 
         void addEntry(Entry entry) {
+            /*TODO: Check if there is an entry with the same name
+            Vague idea of code:
+                if(existingEntry(entry)){
+                    Entry old = removeExisting();
+                    updateInfo(entry,old); //Change frequency(if different) and range of old
+                    toAdd.add(old);
+                }
+                else
+                    toAdd.add(entry);
+
+            */
             toAdd.add(entry);
         }
 
@@ -170,7 +181,6 @@ public class DataManager {
                 closest=e;
             }
         }
-        /*TODO: Remove the closest entry from the database to be returned with updated info*/
         return closest;
     }
 
@@ -178,39 +188,35 @@ public class DataManager {
         ArrayList<Entry> entriesList = new <Entry>ArrayList();
         Cursor c = provide.getAll();
         if(!c.moveToFirst()) //Check if database is empty
-            return null;
-        boolean end = false;
-        if(!end)
-            return null;
-        while (!end) {
-            Entry e = new Entry();
-            //Change database to entry array
-            e.put(e.name,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
-            e.put(e.lat,c.getString(c.getColumnIndex(Provider.TableOne_Data.LATITUDE)));
-            e.put(e.lon,c.getString(c.getColumnIndex(Provider.TableOne_Data.LONGITUDE)));
-            e.put(e.accuracy,c.getString(c.getColumnIndex(Provider.TableOne_Data.ACCURACY)));
-            e.put(e.time,c.getString(c.getColumnIndex(Provider.TableOne_Data.TIMESTAMP)));
-            //TODO: Add fields to database for following values.
-            e.put(e.frequency,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
-            e.put(e.activity,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
-            e.put(e.with,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
-            entriesList.add(e);
-            end=c.moveToNext();
-        }
+            return new Entry[0];
+//        boolean end = false;
+//        while (!end) {
+//            Entry e = new Entry();
+//            //Change database to entry array
+//            e.put(e.name,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
+//            e.put(e.lat,c.getString(c.getColumnIndex(Provider.TableOne_Data.LATITUDE)));
+//            e.put(e.lon,c.getString(c.getColumnIndex(Provider.TableOne_Data.LONGITUDE)));
+//            e.put(e.accuracy,c.getString(c.getColumnIndex(Provider.TableOne_Data.ACCURACY)));
+//            e.put(e.time,c.getString(c.getColumnIndex(Provider.TableOne_Data.TIMESTAMP)));
+//            //TODO: Add fields to database for following values.
+//            e.put(e.frequency,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
+//            e.put(e.activity,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
+//            e.put(e.with,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
+//            entriesList.add(e);
+//            end=c.moveToNext();
+//        }
         Entry[] entries = new Entry[entriesList.size()];
         for(int i=0;i<entries.length;i++)
             entries[i]=entriesList.get(i);
         return entries;
     }
 
-    void askNewLocation(Context context, Location location) throws JSONException {
+    private void askNewLocation(Context context, Location location) throws JSONException {
         ESM_Radio q1 = new ESM_Radio();
         ESM_Radio q2 = new ESM_Radio();
         ESMFactory factory1 = new ESMFactory();
         Entry[] entries = getEntries();
-        for(int i=0;i<entries.length;i++) {
-            q1.addRadio(entries[i].get(entries[i].name));
-        }
+        for(Entry e:entries) q2.addRadio(e.get(e.name));
         q1.addRadio("Other")
                 .setInstructions(NEW_QUESTION_1)
                 .setTitle("New Location")
@@ -230,70 +236,81 @@ public class DataManager {
             toBeAnswered.add(new Entry(location));
     }
 
-    void askPreviousLocation(Context context, Entry entry) throws JSONException {
+    private void askPreviousLocation(Context context, Entry entry) throws JSONException {
         ESM_Radio q1 = new ESM_Radio();
         ESM_Radio q2 = new ESM_Radio();
-        ESMFactory factory1 = new ESMFactory();
+        ESMFactory factory = new ESMFactory();
         Entry[] entries = getEntries();
-        for(int i=0;i<entries.length;i++) {
-            q1.addRadio(entries[i].get(entries[i].activity));
-        }
-        q1.addRadio("Other")
+        for(Entry e:entries) q2.addRadio(e.get(e.activity)); //Gets existing entries in database and displays as options
+        q1.addRadio("Other") //Option to allow user to input new entry
                 .setInstructions(PREV_QUESTION_1)
                 .setTitle("Previous Location")
                 .setSubmitButton("OK");
-        factory1.addESM(q1);
-        for(int i=0;i<entries.length;i++) {
-            q2.addRadio(entries[i].get(entries[i].with));
-        }
+        factory.addESM(q1);
+        for(Entry e:entries) q2.addRadio(e.get(e.with));
         q2.addRadio("Other")
                 .setInstructions(PREV_QUESTION_2)
                 .setTitle("Previous Location")
                 .setSubmitButton("OK");
-        factory1.addESM(q2);
+        factory.addESM(q2);
         questionsPerQueue = 2;
-        ESM.queueESM(context, factory1.build());
+        ESM.queueESM(context, factory.build());
         for (int i = 0; i < questionsPerQueue; i++)
             toBeAnswered.add(entry);
     }
 
+    /**
+     * Checks if there are any issues with the answered ESM and passes on to be stored
+     * @param info All the ESM details ie: Instructions, title etc.
+     * @param answer The user's response to the ESM
+     */
     void onESMAnswered(JSONObject info, String answer) {
-        if (info == null || answer == null || toBeAnswered.isEmpty())
+        if (info == null || answer == null || toBeAnswered.isEmpty()) {
+            Log.e(TAG, "Part of the ESM was null or the queue of locations was empty.");
             return;
+        }
         Entry entry = toBeAnswered.poll();
         storeData(info, answer, entry);
     }
 
-
+    /**
+     * Checks what question was answered. If more questions to be added make sure to keep updating info
+     * in waiting entry until last question answered then store entry.
+     * @param esmJson   All the ESM details ie: Instructions, title etc.
+     * @param esmAnswer The user's response to the ESM
+     * @param entry The entry containing the location the ESM is based on
+     */
     private void storeData(JSONObject esmJson, String esmAnswer, Entry entry) {
 
         try {
             String instructions = esmJson.getString("esm_instructions");
-            if (instructions.equals(NEW_QUESTION_1)){
-                //Setting name value
-                entry.put(entry.name,esmAnswer);
-                waiting = entry;
-            }
-            else if (instructions.equals(NEW_QUESTION_2)) {
-                //Setting frequency value
-                waiting.put(entry.frequency,esmAnswer);
-                provide.addEntry(waiting);
-                waiting = null;
-            }
-            else if (instructions.equals(PREV_QUESTION_1)) {
-                //Setting activity value
-                entry.put(entry.activity,esmAnswer);
-                waiting = entry;
-            }
-            else if (instructions.equals(PREV_QUESTION_2)) {
-                //Setting with value
-                waiting.put(entry.with,esmAnswer);
-                provide.addEntry(waiting);
-                waiting = null;
-            }
-            else
-                return;
+            switch (instructions){
+                case NEW_QUESTION_1:
+                    //Setting name value
+                    entry.put(entry.name,esmAnswer);
+                    waiting = entry;
+                    break;
+                case NEW_QUESTION_2:
+                    //Setting frequency value
+                    waiting.put(entry.frequency,esmAnswer);
+                    provide.addEntry(waiting);
+                    waiting = null;
 
+                 case PREV_QUESTION_1:
+                    //Setting activity value
+                    entry.put(entry.activity,esmAnswer);
+                    waiting = entry;
+
+                case PREV_QUESTION_2:
+                    //Setting with value
+                    waiting.put(entry.with,esmAnswer);
+                    provide.addEntry(waiting);
+                    waiting = null;
+
+                default:
+                    Log.e(TAG,"Received answer to unknown ESM.\nClearing queue to be answered.");
+                    toBeAnswered.clear();
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -308,23 +325,31 @@ public class DataManager {
         toBeAnswered.clear(); //Remove corresponding location
     }
 
-    private static void printEntry(Entry loc) {
-        if (loc == null) {
-            Log.i(TAG, "Location was null.");
-            return;
-        }
-        Log.i(TAG,"Entry:\n"+
-                "Time: "+ loc.get(loc.time)+"\n" +
-                "Name: "+ loc.get(loc.name)+"\n" +
-                "Lat: "+ loc.get(loc.lat)+"\n" +
-                "Lon: "+ loc.get(loc.lon)+"\n" +
-                "Accuracy: "+ loc.get(loc.accuracy)+"\n" +
-                "Range: "+ loc.get(loc.range)+"\n" +
-                "Frequency: "+ loc.get(loc.frequency)+"\n" +
-                "Activity: "+ loc.get(loc.activity)+"\n" +
-                "With: "+ loc.get(loc.with)+"\n" );
-    }
+//    private static void printEntry(Entry loc) {
+//        if (loc == null) {
+//            Log.i(TAG, "Location was null.");
+//            return;
+//        }
+//        Log.i(TAG,"Entry:\n"+
+//                "Time: "+ loc.get(loc.time)+"\n" +
+//                "Name: "+ loc.get(loc.name)+"\n" +
+//                "Lat: "+ loc.get(loc.lat)+"\n" +
+//                "Lon: "+ loc.get(loc.lon)+"\n" +
+//                "Accuracy: "+ loc.get(loc.accuracy)+"\n" +
+//                "Range: "+ loc.get(loc.range)+"\n" +
+//                "Frequency: "+ loc.get(loc.frequency)+"\n" +
+//                "Activity: "+ loc.get(loc.activity)+"\n" +
+//                "With: "+ loc.get(loc.with)+"\n" );
+//    }
 
+    /**
+     *
+     * @param lat1 Latitude of point 1
+     * @param lon1 Longitude of point 1
+     * @param lat2 Latitude of point 2
+     * @param lon2 Longitude of point 2
+     * @return  Distance between the two points based on the Haversine method
+     */
     private int distance(double lat1, double lon1, double lat2, double lon2) {
         double p = 0.017453292519943295;    // Math.PI / 180
         double a = 0.5 - Math.cos((lat2 - lat1) * p) / 2 +
