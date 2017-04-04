@@ -58,7 +58,7 @@ public class Provider extends ContentProvider {
 
         public static final String LATITUDE = "double_latitude";
         public static final String LONGITUDE = "double_longitude";
-        public static final String ACCURACY = "accuracy";
+//        public static final String ACCURACY = "double_accuracy";
         public static final String LOCATION_NAME = "location_name";
 
         //Note: integers and strings don't need a type prefix_
@@ -73,8 +73,8 @@ public class Provider extends ContentProvider {
                     TableOne_Data.TIMESTAMP + " real default 0," +
                     TableOne_Data.LONGITUDE + " real default 0," +
                     TableOne_Data.LATITUDE + " real default 0," +
+//                    TableOne_Data.ACCURACY + " real default 0," +
                     TableOne_Data.LOCATION_NAME + " text default ''," +
-                    TableOne_Data.ACCURACY + " int default 0," +
                     TableOne_Data.DEVICE_ID + " text default ''," +
                     TableOne_Data.NAME + " text default ''," +
                     TableOne_Data.BIG_NUMBER + " real default 0," +
@@ -101,6 +101,7 @@ public class Provider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
+        Log.i("\n\n\n", "ON CREATE WAS CALLED");
         //This is a hack to allow providers to be reusable in any application/plugin by making the authority dynamic using the package name of the parent app
         AUTHORITY = getContext().getPackageName() + ".provider.xxx"; //make sure xxx matches the first string in this class
 
@@ -117,13 +118,12 @@ public class Provider extends ContentProvider {
         tableOneHash.put(TableOne_Data.DEVICE_ID, TableOne_Data.DEVICE_ID);
         tableOneHash.put(TableOne_Data.NAME, TableOne_Data.NAME);
         tableOneHash.put(TableOne_Data.BIG_NUMBER, TableOne_Data.BIG_NUMBER);
-        tableOneHash.put(TableOne_Data.PICTURE, TableOne_Data.PICTURE);
-
-        tableOneHash.put(TableOne_Data.ACCURACY, TableOne_Data.ACCURACY);
+//        tableOneHash.put(TableOne_Data.ACCURACY, TableOne_Data.ACCURACY);
         tableOneHash.put(TableOne_Data.LATITUDE, TableOne_Data.LATITUDE);
+
         tableOneHash.put(TableOne_Data.LONGITUDE, TableOne_Data.LONGITUDE);
         tableOneHash.put(TableOne_Data.LOCATION_NAME, TableOne_Data.LOCATION_NAME);
-
+        tableOneHash.put(TableOne_Data.PICTURE, TableOne_Data.PICTURE);
         return true;
     }
 
@@ -161,6 +161,21 @@ public class Provider extends ContentProvider {
         ContentValues values = (initialValues != null) ? new ContentValues(initialValues) : new ContentValues();
 
         database.beginTransaction();
+
+        if (sUriMatcher == null) {
+            Log.i("\n\n", "uri matcher was null");
+        }
+        else {
+            Log.i("\n\n", "uri matcher wasn't null");
+        }
+
+        if (uri == null) {
+            Log.i("\n\n", "uri was null");
+        }
+        else {
+            Log.i("\n\n", "uri wasn't null");
+        }
+
 
         switch (sUriMatcher.match(uri)) {
 

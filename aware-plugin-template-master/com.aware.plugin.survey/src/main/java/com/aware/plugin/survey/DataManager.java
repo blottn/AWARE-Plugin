@@ -56,12 +56,12 @@ public class DataManager {
                     Entry data = toAdd.poll();
                     Log.i(TAG, "inserting: " + data.values.get("name"));
                     ContentValues values = new ContentValues();
-                    values.put(Provider.TableOne_Data.LOCATION_NAME, data.values.get("name"));
-                    values.put(Provider.TableOne_Data.LATITUDE, Integer.parseInt(data.values.get("lat")));
-                    values.put(Provider.TableOne_Data.TIMESTAMP, Integer.parseInt(data.values.get("time")));
-                    values.put(Provider.TableOne_Data.LONGITUDE, Integer.parseInt(data.values.get("long")));
-                    values.put(Provider.TableOne_Data.ACCURACY, Integer.parseInt(data.values.get("accuracy")));
-//                    provider.insert(Provider.TableOne_Data.CONTENT_URI, values);
+//                    values.put(Provider.TableOne_Data.LOCATION_NAME, data.values.get("name"));
+                    values.put(Provider.TableOne_Data.LATITUDE, Double.parseDouble(data.values.get("lat")));
+                    values.put(Provider.TableOne_Data.TIMESTAMP, Long.parseLong(data.values.get("time")));    //needs a different time format
+                    values.put(Provider.TableOne_Data.LONGITUDE, Double.parseDouble(data.values.get("lon")));
+//                    values.put(Provider.TableOne_Data.ACCURACY, Integer.parseInt(data.values.get("accuracy")));
+                    provider.insert(Provider.TableOne_Data.CONTENT_URI, values);
                     Log.i(TAG, "Stored a location in the database");
                 }
             }
@@ -92,7 +92,7 @@ public class DataManager {
             left.setLongitude(left.getLongitude() - (((double) metres) / 111111.00) * Math.cos(left.getLatitude() * 2 * Math.PI));
             right.setLongitude(right.getLongitude() + (((double) metres) / 111111.00) * Math.cos(right.getLatitude() * 2 * Math.PI));
             Cursor cursor = Plugin.context.getContentResolver().query(Provider.TableOne_Data.CONTENT_URI,
-                        new String[] {Provider.TableOne_Data.LOCATION_NAME, Provider.TableOne_Data.LONGITUDE, Provider.TableOne_Data.LATITUDE, Provider.TableOne_Data.ACCURACY},
+                        new String[] {Provider.TableOne_Data.LOCATION_NAME, Provider.TableOne_Data.LONGITUDE, Provider.TableOne_Data.LATITUDE},// Provider.TableOne_Data.ACCURACY},
                             "(" + Provider.TableOne_Data.LATITUDE  + " BETWEEN " + down.getLatitude() + " AND " + up.getLatitude() + ") AND " +
                             "(" + Provider.TableOne_Data.LONGITUDE + " BETWEEN " + left.getLatitude() + " AND " + right.getLatitude() + ")",
 //                            Provider.TableOne_Data.ACCURACY + "<" + accuracy,
@@ -100,6 +100,24 @@ public class DataManager {
                         Provider.TableOne_Data.TIMESTAMP + " DESC LIMIT 1");
             return cursor;
         }
+
+        void printAllRows() {
+            Cursor cursor = Plugin.context.getContentResolver().query(Provider.TableOne_Data.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    Provider.TableOne_Data.TIMESTAMP + " DESC LIMIT 1"
+                    );
+
+            Log.i(TAG, "here are all the rows of the database");
+            while (cursor != null && cursor.moveToNext()) {
+                for (String column : cursor.getColumnNames()) {
+                    Log.i(TAG, "Column: " + column + " value " + cursor.getString(cursor.getColumnIndex(column)));
+                }
+            }
+
+        }
+
     }
 
     public static class MarkedLocation {
@@ -120,7 +138,8 @@ public class DataManager {
     }
 
     void giveLocation(final Context context, final Location location) {
-        //TODO remove hardcoded insert
+        //TODO remove hardcoded testing
+        provide.printAllRows();
 //        provide.addMarkedLocation(new MarkedLocation("hello world", location));
         if (isNoteworthy(location)) {
             onLocationReceive(context, location);
@@ -182,8 +201,8 @@ public class DataManager {
             previousLocation = location;
             return true;
         }
-        if (location == null || location.getAccuracy() > TOLERABLE_ACCURACY || distance(location.getLatitude(), location.getLongitude(), previousLocation.getLatitude(),
-                previousLocation.getLongitude()) < NEGLIGIBLE_RANGE) { //If points are within negligible range
+        if (location == null || location.getAccuracy() > TOLERABLE_ACCURACY) {/* || distance(location.getLatitude(), location.getLongitude(), previousLocation.getLatitude(),
+                previousLocation.getLongitude()) < NEGLIGIBLE_RANGE) { //If points are within negligible range*/
             Log.i(TAG, "Location was negligible");
             return false;
         }
