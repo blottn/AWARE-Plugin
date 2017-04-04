@@ -8,13 +8,14 @@ import android.location.*;
 import android.util.Log;
 
 import com.aware.ESM;
-import com.aware.providers.Locations_Provider;
+import com.aware.ui.ESM_Queue;
 import com.aware.ui.esms.*;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static android.content.ContentValues.TAG;
@@ -33,6 +34,7 @@ public class DataManager {
     static Time stopQuestions = null;
     private ConcurrentLinkedQueue<Entry> toBeAnswered = new ConcurrentLinkedQueue<>();
     int questionsPerQueue;
+    Entry waiting; //Waiting for question queue to finish
 
     private final int NEGLIGIBLE_RANGE = 5;
     private final int TOLERABLE_ACCURACY = 250;
@@ -57,18 +59,18 @@ public class DataManager {
                     Log.i(TAG, "inserting: " + data.values.get("name"));
                     ContentValues values = new ContentValues();
                     values.put(Provider.TableOne_Data.LOCATION_NAME, data.values.get("name"));
-                    values.put(Provider.TableOne_Data.LATITUDE, Integer.parseInt(data.values.get("lat")));
-                    values.put(Provider.TableOne_Data.TIMESTAMP, Integer.parseInt(data.values.get("time")));
-                    values.put(Provider.TableOne_Data.LONGITUDE, Integer.parseInt(data.values.get("long")));
-                    values.put(Provider.TableOne_Data.ACCURACY, Integer.parseInt(data.values.get("accuracy")));
+                    values.put(Provider.TableOne_Data.LATITUDE, Double.parseDouble(data.values.get("lat")));
+                    values.put(Provider.TableOne_Data.TIMESTAMP, Long.parseLong(data.values.get("time")));
+                    values.put(Provider.TableOne_Data.LONGITUDE, Double.parseDouble(data.values.get("lon")));
+                    values.put(Provider.TableOne_Data.ACCURACY, Double.parseDouble(data.values.get("accuracy")));
 //                    provider.insert(Provider.TableOne_Data.CONTENT_URI, values);
                     Log.i(TAG, "Stored a location in the database");
                 }
             }
         }
 
-        void addEntry(Entry location) {
-            toAdd.add(location);
+        void addEntry(Entry entry) {
+            toAdd.add(entry);
         }
 
         Cursor getAll() {
@@ -126,14 +128,14 @@ public class DataManager {
 
     private boolean isNoteworthy(Location location) {
         Log.i(TAG, "Checking if location is noteworthy");
-        if (location.getSpeed() > 4)
+        if (location == null || location.getSpeed() > 4)
             return false;
         if (previousLocation == null) {
             Log.i(TAG, "Not known previous location");
             previousLocation = location;
             return true;
         }
-        if (location == null || location.getAccuracy() > TOLERABLE_ACCURACY || distance(location.getLatitude(), location.getLongitude(), previousLocation.getLatitude(),
+        if (location.getAccuracy() > TOLERABLE_ACCURACY || distance(location.getLatitude(), location.getLongitude(), previousLocation.getLatitude(),
                 previousLocation.getLongitude()) < NEGLIGIBLE_RANGE) { //If points are within negligible range
             Log.i(TAG, "Location was negligible");
             return false;
@@ -144,6 +146,7 @@ public class DataManager {
 
     private void onLocationReceive(Context context, Location location) {
         try {
+            Entry entry = isPreviousLocation(location);
             int locType = getLocationType(location);
             switch (locType) {
                 case 0:
@@ -157,6 +160,46 @@ public class DataManager {
             }
         } catch (JSONException e) {
             e.printStackTrace();
+        }
+    }
+
+    private Entry isPreviousLocation(Location loc) {
+        Entry[] entries = getEntries();
+        Entry closest=null;
+        int closestDist=Integer.MAX_VALUE;
+        int dist;
+        for(Entry e:entries){
+            dist=distance(Double.parseDouble(e.get(e.lat)),Double.parseDouble(e.get(e.lon))
+                    ,loc.getLatitude(),loc.getLongitude());
+            if (dist < Integer.parseInt(e.get(e.range)) && dist<closestDist) {
+                closest=e; //TODO: Change onLocationReceive to use this function
+            }
+        }
+
+
+        return null;
+    }
+
+    private Entry[] getEntries(){
+        Cursor c = provide.getAll();
+        if(!c.moveToFirst())
+            return null;
+        boolean end = false;
+        while (!end) {
+            //Change database to entry array
+            end=c.moveToNext();
+        }
+        return null;
+    }
+
+    private int getLocationType(Location loc) {
+        Cursor c = provide.getLocationsWithin(50, 50, loc);
+        Log.i(TAG, "Number of nearby locations: " +c.getCount());
+
+        if (c == null || c.getCount() == 0) {
+            return 0;
+        } else {
+            return 2;
         }
     }
 
@@ -220,76 +263,71 @@ public class DataManager {
     }
 
     void onESMAnswered(JSONObject info, String answer) {
-        if (info == null || answer == null)
+        if (info == null || answer == null || toBeAnswered.isEmpty())
             return;
         Entry entry = toBeAnswered.poll();
         storeData(info, answer, entry);
     }
 
-    private int getLocationType(Location loc) {
-        Cursor c = provide.getLocationsWithin(50, 50, loc);
-        Log.i(TAG, "Number of nearby locations: " +c.getCount());
-
-        if (c == null || c.getCount() == 0) {
-            return 0;
-        } else {
-            return 2;
-        }
-    }
 
     private void storeData(JSONObject esmJson, String esmAnswer, Entry entry) {
+
         try {
             String instructions = esmJson.getString("esm_instructions");
             if (instructions.equals(NEW_QUESTION_1)){
                 //Setting name value
                 entry.put(entry.name,esmAnswer);
+                waiting = entry;
             }
             else if (instructions.equals(NEW_QUESTION_2)) {
                 //Setting frequency value
-                entry.put(entry.frequency,esmAnswer);
+                waiting.put(entry.frequency,esmAnswer);
+                provide.addEntry(waiting);
+                waiting = null;
             }
             else if (instructions.equals(PREV_QUESTION_1)) {
                 //Setting activity value
                 entry.put(entry.activity,esmAnswer);
+                waiting = entry;
             }
             else if (instructions.equals(PREV_QUESTION_2)) {
                 //Setting with value
-                entry.put(entry.with,esmAnswer);
+                waiting.put(entry.with,esmAnswer);
+                provide.addEntry(waiting);
+                waiting = null;
             }
             else
                 return;
-            provide.addEntry(entry);
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-        try {
-            Log.i(TAG, "\n-----------------------------------------\n" +
-                    "Adding location to database:\nQuestion: "
-                    + esmJson.getString("esm_instructions")
-                    + "\nAnswer: "+ esmAnswer);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        printEntry(entry);
-        Log.i(TAG, "\n-----------------------------------------\n");
     }
 
-
+    /**
+     *Functions below not directly in timeline of events
+     */
 
     void onESMCancelled() {
         Log.i(TAG, "ESM cancelled");
-        toBeAnswered.poll(); //Remove corresponding location
+        toBeAnswered.clear(); //Remove corresponding location
     }
 
-    private void printEntry(Entry loc) {
+    private static void printEntry(Entry loc) {
         if (loc == null) {
             Log.i(TAG, "Location was null.");
             return;
         }
-        Log.i(TAG, "\n" + loc.get(loc.lat) + ", " + loc.get(loc.lon)+
-                "\nTime:" + loc.get(loc.time)+ "\nAccuracy: " + loc.get(loc.accuracy));
+        Log.i(TAG,"Entry:\n"+
+                "Time: "+ loc.get(loc.time)+"\n" +
+                "Name: "+ loc.get(loc.name)+"\n" +
+                "Lat: "+ loc.get(loc.lat)+"\n" +
+                "Lon: "+ loc.get(loc.lon)+"\n" +
+                "Accuracy: "+ loc.get(loc.accuracy)+"\n" +
+                "Range: "+ loc.get(loc.range)+"\n" +
+                "Frequency: "+ loc.get(loc.frequency)+"\n" +
+                "Activity: "+ loc.get(loc.activity)+"\n" +
+                "With: "+ loc.get(loc.with)+"\n" );
     }
 
     private int distance(double lat1, double lon1, double lat2, double lon2) {

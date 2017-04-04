@@ -30,6 +30,7 @@ class Entry {
         values.put(name, "null");
         values.put(frequency, "null");
         values.put(activity, "null");
+        values.put(with, "null");
         values.put(range,"30"); //Default range of location
         values.put(time,new Time(loc.getTime()).getTime() + "");
     }
