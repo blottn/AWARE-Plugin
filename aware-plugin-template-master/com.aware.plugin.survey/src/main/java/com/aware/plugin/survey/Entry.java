@@ -35,6 +35,20 @@ class Entry {
         values.put(time,new Time(loc.getTime()).getTime() + "");
     }
 
+    public Entry(){
+        location = null;
+        values = new HashMap<>();
+        values.put(lat,"null");
+        values.put(lon,"null");
+        values.put(accuracy, "null");
+        values.put(name, "null");
+        values.put(frequency, "null");
+        values.put(activity, "null");
+        values.put(with, "null");
+        values.put(range,"30"); //Default range of location
+        values.put(time,"null");
+    }
+
     public void put(String key,String val){
         values.put(key,val);
     }

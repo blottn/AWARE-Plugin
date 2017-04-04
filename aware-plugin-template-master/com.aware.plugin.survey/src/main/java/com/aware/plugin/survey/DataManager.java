@@ -147,16 +147,11 @@ public class DataManager {
     private void onLocationReceive(Context context, Location location) {
         try {
             Entry entry = isPreviousLocation(location);
-            int locType = getLocationType(location);
-            switch (locType) {
-                case 0:
-                    askNewLocation(context, location);
-                    break;
-                case 1:
-                    askPreviousLocation(context, location);
-                    break;
-                default:
-                    break;
+            if (entry == null) {
+                askNewLocation(context, location);
+            }
+            else{
+                askPreviousLocation(context, entry);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -172,53 +167,56 @@ public class DataManager {
             dist=distance(Double.parseDouble(e.get(e.lat)),Double.parseDouble(e.get(e.lon))
                     ,loc.getLatitude(),loc.getLongitude());
             if (dist < Integer.parseInt(e.get(e.range)) && dist<closestDist) {
-                closest=e; //TODO: Change onLocationReceive to use this function
+                closest=e;
             }
         }
-
-
-        return null;
+        /*TODO: Remove the closest entry from the database to be returned with updated info*/
+        return closest;
     }
 
     private Entry[] getEntries(){
+        ArrayList<Entry> entriesList = new <Entry>ArrayList();
         Cursor c = provide.getAll();
-        if(!c.moveToFirst())
+        if(!c.moveToFirst()) //Check if database is empty
             return null;
         boolean end = false;
+        if(!end)
+            return null;
         while (!end) {
+            Entry e = new Entry();
             //Change database to entry array
+            e.put(e.name,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
+            e.put(e.lat,c.getString(c.getColumnIndex(Provider.TableOne_Data.LATITUDE)));
+            e.put(e.lon,c.getString(c.getColumnIndex(Provider.TableOne_Data.LONGITUDE)));
+            e.put(e.accuracy,c.getString(c.getColumnIndex(Provider.TableOne_Data.ACCURACY)));
+            e.put(e.time,c.getString(c.getColumnIndex(Provider.TableOne_Data.TIMESTAMP)));
+            //TODO: Add fields to database for following values.
+            e.put(e.frequency,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
+            e.put(e.activity,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
+            e.put(e.with,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
+            entriesList.add(e);
             end=c.moveToNext();
         }
-        return null;
-    }
-
-    private int getLocationType(Location loc) {
-        Cursor c = provide.getLocationsWithin(50, 50, loc);
-        Log.i(TAG, "Number of nearby locations: " +c.getCount());
-
-        if (c == null || c.getCount() == 0) {
-            return 0;
-        } else {
-            return 2;
-        }
+        Entry[] entries = new Entry[entriesList.size()];
+        for(int i=0;i<entries.length;i++)
+            entries[i]=entriesList.get(i);
+        return entries;
     }
 
     void askNewLocation(Context context, Location location) throws JSONException {
         ESM_Radio q1 = new ESM_Radio();
         ESM_Radio q2 = new ESM_Radio();
         ESMFactory factory1 = new ESMFactory();
-        q1.addRadio("Work")
-                .addRadio("Home")
-                .addRadio("Café")
-                .addRadio("Gym")
-                .addRadio("Restaurant")
-                .addRadio("Other")
+        Entry[] entries = getEntries();
+        for(int i=0;i<entries.length;i++) {
+            q1.addRadio(entries[i].get(entries[i].name));
+        }
+        q1.addRadio("Other")
                 .setInstructions(NEW_QUESTION_1)
                 .setTitle("New Location")
                 .setSubmitButton("OK");
         factory1.addESM(q1);
         q2.addRadio("Daily")
-
                 .addRadio("Weekly")
                 .addRadio("Monthly")
                 .addRadio("Less Often")
@@ -232,26 +230,23 @@ public class DataManager {
             toBeAnswered.add(new Entry(location));
     }
 
-    void askPreviousLocation(Context context, Location location) throws JSONException {
+    void askPreviousLocation(Context context, Entry entry) throws JSONException {
         ESM_Radio q1 = new ESM_Radio();
         ESM_Radio q2 = new ESM_Radio();
         ESMFactory factory1 = new ESMFactory();
-        q1.addRadio("Working")
-                .addRadio("Cooking")
-                .addRadio("Studying")
-                .addRadio("Leisure")
-                .addRadio("Eating")
-                .addRadio("Other")
+        Entry[] entries = getEntries();
+        for(int i=0;i<entries.length;i++) {
+            q1.addRadio(entries[i].get(entries[i].activity));
+        }
+        q1.addRadio("Other")
                 .setInstructions(PREV_QUESTION_1)
                 .setTitle("Previous Location")
                 .setSubmitButton("OK");
         factory1.addESM(q1);
-        q2.addRadio("Alone")
-                .addRadio("Family")
-                .addRadio("Partner")
-                .addRadio("Friends")
-                .addRadio("Colleague")
-                .addRadio("Other")
+        for(int i=0;i<entries.length;i++) {
+            q2.addRadio(entries[i].get(entries[i].with));
+        }
+        q2.addRadio("Other")
                 .setInstructions(PREV_QUESTION_2)
                 .setTitle("Previous Location")
                 .setSubmitButton("OK");
@@ -259,7 +254,7 @@ public class DataManager {
         questionsPerQueue = 2;
         ESM.queueESM(context, factory1.build());
         for (int i = 0; i < questionsPerQueue; i++)
-            toBeAnswered.add(new Entry(location));
+            toBeAnswered.add(entry);
     }
 
     void onESMAnswered(JSONObject info, String answer) {
