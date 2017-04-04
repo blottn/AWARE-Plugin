@@ -26,7 +26,7 @@ class Entry {
         values.put(lon,loc.getLongitude()+"");
         values.put(accuracy, loc.getAccuracy() + "");
         values.put(range,"30"); //Default range of location
-        values.put(time,new Time(loc.getTime()).toString());
+        values.put(time,new Time(loc.getTime()).getTime() + "");
     }
 
     public void put(String key,String val){
