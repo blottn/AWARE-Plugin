@@ -71,6 +71,14 @@ public class DataManager {
             toAdd.add(location);
         }
 
+        Cursor getAll() {
+            return Plugin.context.getContentResolver().query(Provider.TableOne_Data.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    Provider.TableOne_Data.TIMESTAMP + " DESC");
+        }
+
         Cursor mostRecent() {
             Cursor cursor = provider.query(Provider.TableOne_Data.CONTENT_URI, null, null, null, Provider.TableOne_Data.TIMESTAMP + " DESC 1");
             cursor.moveToFirst();
