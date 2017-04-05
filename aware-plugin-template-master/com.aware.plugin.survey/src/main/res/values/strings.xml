@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Location Survey</string>
+    <string name="aware_esm_other">Other</string>
+    <string name="aware_esm_other_follow">Can you be more specific, please?</string>
 </resources>
