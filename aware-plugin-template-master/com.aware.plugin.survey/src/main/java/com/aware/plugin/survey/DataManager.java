@@ -65,7 +65,7 @@ public class DataManager {
                     values.put(Provider.Location_Survey_Table.LONGITUDE, Double.parseDouble(data.values.get("lon")));
 //                    values.put(Provider.TableOne_Data.ACCURACY, Integer.parseInt(data.values.get("accuracy")));
                     provider.insert(Provider.Location_Survey_Table.CONTENT_URI, values);
-                    Log.i(TAG, "Stored a location in the database");
+                    Log.i(TAG, "Stored a location in the database.");
                 }
             }
         }
@@ -80,7 +80,6 @@ public class DataManager {
                 }
                 else
                     toAdd.add(entry);
-
             */
             toAdd.add(entry);
         }
@@ -100,7 +99,6 @@ public class DataManager {
         }
 
         Cursor getLocationsWithin(int metres, int accuracy, Location location) {
-
             Location up, down, left, right;
             up = new Location(location);
             down = new Location(location);
@@ -149,9 +147,7 @@ public class DataManager {
     }
 
     void giveLocation(final Context context, final Location location) {
-        //TODO remove hardcoded testing
         provide.printAllRows();
-//        provide.addMarkedLocation(new MarkedLocation("hello world", location));
         if (isNoteworthy(location)) {
             onLocationReceive(context, location);
         }
@@ -289,6 +285,7 @@ public class DataManager {
             Log.e(TAG, "Part of the ESM was null or the queue of locations was empty.");
             return;
         }
+        //TODO fill out the name field in the entry here
         Entry entry = toBeAnswered.poll();
         storeData(info, answer, entry);
     }

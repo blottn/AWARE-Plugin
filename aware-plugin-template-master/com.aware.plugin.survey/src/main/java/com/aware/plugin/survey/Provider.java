@@ -14,8 +14,6 @@ import android.provider.BaseColumns;
 import android.util.Log;
 
 import com.aware.Aware;
-import com.aware.plugin.survey.DataManager;
-import com.aware.providers.Locations_Provider;
 import com.aware.utils.DatabaseHelper;
 
 import java.io.File;
@@ -25,7 +23,7 @@ public class Provider extends ContentProvider {
 
     //CONSTANTS
     public static String AUTHORITY = "com.aware.provider.plugin.location.survey";
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final int Location_Survey = 1;
     public static final int Location_Survey_ID = 2;
 
@@ -87,7 +85,7 @@ public class Provider extends ContentProvider {
         tableMap.put(Location_Survey_Table._ID, Location_Survey_Table._ID);
         tableMap.put(Location_Survey_Table.TIMESTAMP, Location_Survey_Table.TIMESTAMP);
         tableMap.put(Location_Survey_Table.DEVICE_ID, Location_Survey_Table.DEVICE_ID);
-
+        tableMap.put(Location_Survey_Table.ACCURACY, Location_Survey_Table.ACCURACY);
         return true; //let Android know that the database is ready to be used.
     }
     private boolean initializeDB() {
