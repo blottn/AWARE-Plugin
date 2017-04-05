@@ -56,9 +56,9 @@ public class Provider extends ContentProvider {
     }
 
     private static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/location_survey");
-    private static final String[] DATABASE_TABLES = {"location_survey"};
+    public static final String[] DATABASE_TABLES = {"location_survey"};
 
-    private static final String[] TABLES_FIELDS = {
+    public static final String[] TABLES_FIELDS = {
             Location_Survey_Table._ID + " integer primary key autoincrement, " +
                     Location_Survey_Table.TIMESTAMP + " real default 0," +
                     Location_Survey_Table.DEVICE_ID + " text default ''," +
@@ -156,7 +156,7 @@ public class Provider extends ContentProvider {
                 long _id = database.insert(DATABASE_TABLES[0],Location_Survey_Table.DEVICE_ID, values);
                 if (_id > 0) {
                     Uri dataUri = ContentUris.withAppendedId(Location_Survey_Table.CONTENT_URI, _id);
-                    getContext().getContentResolver().notifyChange(dataUri, null);
+                    Plugin.context.getContentResolver().notifyChange(dataUri, null);
                     return dataUri;
                 }
                 throw new SQLException("Failed to insert row into " + uri);

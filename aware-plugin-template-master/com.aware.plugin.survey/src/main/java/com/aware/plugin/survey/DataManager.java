@@ -130,7 +130,7 @@ public class DataManager {
                     Provider.Location_Survey_Table.TIMESTAMP + " DESC LIMIT 1"
                     );
 
-            Log.i(TAG, "here are all the rows of the database");
+            Log.i(TAG, "here are all the rows of the database " + cursor.getCount());
             while (cursor != null && cursor.moveToNext()) {
                 for (String column : cursor.getColumnNames()) {
                     Log.i(TAG, "Column: " + column + " value " + cursor.getString(cursor.getColumnIndex(column)));
