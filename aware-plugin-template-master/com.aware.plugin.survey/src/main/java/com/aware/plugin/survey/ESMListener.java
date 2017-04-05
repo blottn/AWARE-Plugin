@@ -39,16 +39,12 @@ public class ESMListener extends BroadcastReceiver {
         else if(intent.getAction().equals(ESM.ACTION_AWARE_ESM_ANSWERED)){
             try {
                 final Cursor data = c.getContentResolver().query(ESM_Provider.ESM_Data.CONTENT_URI, null, null, null, ESM_Provider.ESM_Data.TIMESTAMP + " DESC LIMIT " + mgr.questionsPerQueue);
-                if (data != null && data.moveToFirst()) {
+                if (data != null && data.moveToLast()) {
                     for(int i=0;i<mgr.questionsPerQueue;i++) {
                         final JSONObject esmInfo = new JSONObject(data.getString(data.getColumnIndex(ESM_Provider.ESM_Data.JSON)));
                         final String s=data.getString(data.getColumnIndex(ESM_Provider.ESM_Data.ANSWER));
-//                        new Thread(new Runnable() {
-//                            public void run() {
-                                mgr.onESMAnswered(esmInfo, s);
-//                            }
-//                        }).start();
-                        data.moveToNext();
+                        mgr.onESMAnswered(esmInfo, s);
+                        data.moveToPrevious();
                     }
                 }
                 data.close();

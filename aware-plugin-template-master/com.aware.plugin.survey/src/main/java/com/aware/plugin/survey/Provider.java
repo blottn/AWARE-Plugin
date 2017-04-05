@@ -1,3 +1,5 @@
+package com.aware.plugin.survey;
+
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -189,4 +191,23 @@ public class Provider extends ContentProvider {
         }
     }
 
+    @Override
+    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        if( ! initializeDB() ) {
+            Log.w("DATABASE","Database unavailable...");
+            return 0;
+        }
+
+        int count = 0;
+        switch (sUriMatcher.match(uri)) {
+            case Location_Survey:
+                count = database.update(DATABASE_TABLES[0], values, selection, selectionArgs);
+                break;
+            default:
+                database.close();
+                throw new IllegalArgumentException("Unknown URI " + uri);
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+        return count;
+    }
 }
