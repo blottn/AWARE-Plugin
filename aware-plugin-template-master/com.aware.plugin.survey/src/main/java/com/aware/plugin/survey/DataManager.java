@@ -76,7 +76,7 @@ public class DataManager {
             return Plugin.context.getContentResolver().query(
                     Provider.Location_Survey_Table.CONTENT_URI,
                     null,
-                    Provider.Location_Survey_Table.LOCATION_NAME + "=" + name,
+                    Provider.Location_Survey_Table.LOCATION_NAME + "='" + name + "'",
                     null,
                     Provider.Location_Survey_Table._ID + " DESC"
             );
@@ -93,12 +93,12 @@ public class DataManager {
                 e.put(e.lat,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.LATITUDE)));
                 e.put(e.lon,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.LONGITUDE)));
                 e.put(e.accuracy,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACCURACY)));
-                e.put(e.time,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.TIMESTAMP)));
+                e.put(e.time,String.format("%l",c.getLong(c.getColumnIndex(Provider.Location_Survey_Table.TIMESTAMP))));
                 e.put(e.frequency,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.FREQUENCY)));
                 e.put(e.activity,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACTIVITY)));
                 e.put(e.with,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.WITH)));
                 e.put(e.range, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.RANGE)));
-                e.put(e.range, "" + distance(entry.location.getLatitude(),entry.location.getLongitude(), Integer.parseInt(e.get(e.lat)), Integer.parseInt(e.get(e.lon))));
+                e.put(e.range, "" + distance(entry.location.getLatitude(),entry.location.getLongitude(), Double.parseDouble(e.get(e.lat)), Double.parseDouble(e.get(e.lon))));
                 toAdd.add(e);
             }
             else
@@ -236,8 +236,8 @@ public class DataManager {
                 closest=e;
             }
         }
-        DataManager.printEntry(closest);
-        if(closest.get(closest.name).equals(""))
+//        DataManager.printEntry(closest);
+        if(closest == null ||closest.get(closest.name).equals(""))
             return null;
         if (closest != null) {
             provider.delete(closest.get(closest.name));

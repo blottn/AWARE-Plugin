@@ -1,7 +1,9 @@
 package com.aware.plugin.survey;
 
 import android.location.Location;
+import android.util.Log;
 
+import java.math.BigDecimal;
 import java.sql.Time;
 import java.util.HashMap;
 /**
