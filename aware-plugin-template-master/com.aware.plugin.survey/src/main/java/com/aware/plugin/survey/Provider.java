@@ -29,10 +29,10 @@ public class Provider extends ContentProvider {
 
     public static String DATABASE_NAME = "location_survey.db";
 
+    private static String TAG = "AWARE::"+Plugin.context.getResources().getString(R.string.app_name);
 
     public static class Location_Survey_Table implements BaseColumns {
         private Location_Survey_Table() {}
-
         // Important init stuff
         public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/location_survey");
         public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.aware.plugin.location_survey";
@@ -45,6 +45,7 @@ public class Provider extends ContentProvider {
 
         //Actual columns
         public static final String LATITUDE = "latitude";
+        public static final String ACTIVITY = "activity";
         public static final String LONGITUDE = "longitude";
         public static final String ACCURACY = "accuracy";
         public static final String LOCATION_NAME = "locaion_name";
@@ -66,7 +67,8 @@ public class Provider extends ContentProvider {
                     Location_Survey_Table.LOCATION_NAME + " text default ''," +
                     Location_Survey_Table.FREQUENCY + " real default 0," +
                     Location_Survey_Table.WITH + " text default ''," +
-                    Location_Survey_Table.RANGE + " real default 0"
+                    Location_Survey_Table.RANGE + " real default 0," +
+                    Location_Survey_Table.ACTIVITY + " text default''"
     };
 
     private static UriMatcher sUriMatcher = null;
@@ -91,6 +93,7 @@ public class Provider extends ContentProvider {
         tableMap.put(Location_Survey_Table.FREQUENCY, Location_Survey_Table.FREQUENCY);
         tableMap.put(Location_Survey_Table.WITH, Location_Survey_Table.WITH);
         tableMap.put(Location_Survey_Table.RANGE, Location_Survey_Table.RANGE);
+        tableMap.put(Location_Survey_Table.ACTIVITY, Location_Survey_Table.ACTIVITY);
         return true; //let Android know that the database is ready to be used.
     }
     private boolean initializeDB() {
@@ -117,7 +120,7 @@ public class Provider extends ContentProvider {
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         if( ! initializeDB() ) {
-            Log.w("DATABASE","Database unavailable...");
+            Log.w(TAG,"Database unavailable...");
             return 0;
         }
 
@@ -148,7 +151,7 @@ public class Provider extends ContentProvider {
     @Override
     public Uri insert(Uri uri, ContentValues new_values) {
         if( ! initializeDB() ) {
-            Log.w("DATABASE","Database unavailable...");
+            Log.w(TAG,"Database unavailable...");
             return null;
         }
 
@@ -171,7 +174,7 @@ public class Provider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         if( ! initializeDB() ) {
-            Log.w("DATABASE","Database unavailable...");
+            Log.w(TAG,"Database unavailable...");
             return null;
         }
 
@@ -197,7 +200,7 @@ public class Provider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         if( ! initializeDB() ) {
-            Log.w("DATABASE","Database unavailable...");
+            Log.w(TAG,"Database unavailable...");
             return 0;
         }
 
