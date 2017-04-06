@@ -232,7 +232,8 @@ public class DataManager {
                 closest=e;
             }
         }
-        if (closest != null) {
+        DataManager.printEntry(closest);
+        if (closest != null && closest.get(closest.name)!=null) {
             provider.delete(closest.get(closest.name));
         }
         return closest;
@@ -378,22 +379,22 @@ public class DataManager {
         toBeAnswered.clear(); //Remove corresponding location
     }
 
-//    private static void printEntry(Entry loc) {
-//        if (loc == null) {
-//            Log.i(TAG, "Location was null.");
-//            return;
-//        }
-//        Log.i(TAG,"Entry:\n"+
-//                "Time: "+ loc.get(loc.time)+"\n" +
-//                "Name: "+ loc.get(loc.name)+"\n" +
-//                "Lat: "+ loc.get(loc.lat)+"\n" +
-//                "Lon: "+ loc.get(loc.lon)+"\n" +
-//                "Accuracy: "+ loc.get(loc.accuracy)+"\n" +
-//                "Range: "+ loc.get(loc.range)+"\n" +
-//                "Frequency: "+ loc.get(loc.frequency)+"\n" +
-//                "Activity: "+ loc.get(loc.activity)+"\n" +
-//                "With: "+ loc.get(loc.with)+"\n" );
-//    }
+    private static void printEntry(Entry loc) {
+        if (loc == null) {
+            Log.i(TAG, "Location was null.");
+            return;
+        }
+        Log.i(TAG,"Entry:\n"+
+                "Time: "+ loc.get(loc.time)+"\n" +
+                "Name: "+ loc.get(loc.name)+"\n" +
+                "Lat: "+ loc.get(loc.lat)+"\n" +
+                "Lon: "+ loc.get(loc.lon)+"\n" +
+                "Accuracy: "+ loc.get(loc.accuracy)+"\n" +
+                "Range: "+ loc.get(loc.range)+"\n" +
+                "Frequency: "+ loc.get(loc.frequency)+"\n" +
+                "Activity: "+ loc.get(loc.activity)+"\n" +
+                "With: "+ loc.get(loc.with)+"\n" );
+    }
 
     /**
      *
