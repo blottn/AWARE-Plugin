@@ -68,18 +68,37 @@ public class DataManager {
             }
         }
 
+        Cursor getForName(String name) {
+            return Plugin.context.getContentResolver().query(
+                    Provider.Location_Survey_Table.CONTENT_URI,
+                    null,
+                    Provider.Location_Survey_Table.LOCATION_NAME + "=" + name,
+                    null,
+                    Provider.Location_Survey_Table._ID + " DESC"
+            );
+        }
+
         void addEntry(Entry entry) {
-            /*TODO: Check if there is an entry with the same name
-            Vague idea of code:
-                if(existingEntry(entry)){
-                    Entry old = removeExisting();
-                    updateInfo(entry,old); //Change frequency(if different) and range of old
-                    toAdd.add(old);
-                }
-                else
-                    toAdd.add(entry);
-            */
-            toAdd.add(entry);
+            if(checkExists(entry.get(entry.name))){
+                Cursor c = getForName(entry.get(entry.name));
+                c.moveToFirst();
+
+                Entry e = new Entry();
+
+                e.put(e.name,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.LOCATION_NAME)));
+                e.put(e.lat,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.LATITUDE)));
+                e.put(e.lon,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.LONGITUDE)));
+                e.put(e.accuracy,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACCURACY)));
+                e.put(e.time,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.TIMESTAMP)));
+                e.put(e.frequency,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.FREQUENCY)));
+                e.put(e.activity,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACTIVITY)));
+                e.put(e.with,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.WITH)));
+                e.put(e.range, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.RANGE)));
+                e.put(e.range, "" + distance(entry.location.getLatitude(),entry.location.getLongitude(), Integer.parseInt(e.get(e.lat)), Integer.parseInt(e.get(e.lon))));
+                toAdd.add(e);
+            }
+            else
+                toAdd.add(entry);
         }
 
         Cursor getAll() {
@@ -384,7 +403,7 @@ public class DataManager {
      * @param lon2 Longitude of point 2
      * @return  Distance between the two points based on the Haversine method
      */
-    private int distance(double lat1, double lon1, double lat2, double lon2) {
+    private static int distance(double lat1, double lon1, double lat2, double lon2) {
         double p = 0.017453292519943295;    // Math.PI / 180
         double a = 0.5 - Math.cos((lat2 - lat1) * p) / 2 +
                 Math.cos(lat1 * p) * Math.cos(lat2 * p) *
