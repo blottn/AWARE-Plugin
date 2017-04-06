@@ -2,13 +2,11 @@ package com.aware.plugin.survey;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.location.*;
 import android.util.Log;
 
 import com.aware.ESM;
-import com.aware.ui.ESM_Queue;
 import com.aware.ui.esms.*;
 
 import org.json.JSONException;
@@ -59,11 +57,11 @@ public class DataManager {
                     Log.i(TAG, "inserting: " + data.values.get(data.name));
                     ContentValues values = new ContentValues();
 
-//                    values.put(Provider.TableOne_Data.LOCATION_NAME, data.values.get("name"));
+//                    values.put(Provider.Location_Survey_Table.LOCATION_NAME, data.values.get("name"));
                     values.put(Provider.Location_Survey_Table.LATITUDE, Double.parseDouble(data.values.get("lat")));
                     values.put(Provider.Location_Survey_Table.TIMESTAMP, Long.parseLong(data.values.get("time")));    //needs a different time format
                     values.put(Provider.Location_Survey_Table.LONGITUDE, Double.parseDouble(data.values.get("lon")));
-//                    values.put(Provider.TableOne_Data.ACCURACY, Integer.parseInt(data.values.get("accuracy")));
+//                    values.put(Provider.Location_Survey_Table.ACCURACY, Integer.parseInt(data.values.get("accuracy")));
                     provider.insert(Provider.Location_Survey_Table.CONTENT_URI, values);
                     Log.i(TAG, "Stored a location in the database.");
                 }
@@ -111,10 +109,10 @@ public class DataManager {
             left.setLongitude(left.getLongitude() - (((double) metres) / 111111.00) * Math.cos(left.getLatitude() * 2 * Math.PI));
             right.setLongitude(right.getLongitude() + (((double) metres) / 111111.00) * Math.cos(right.getLatitude() * 2 * Math.PI));
             Cursor cursor = Plugin.context.getContentResolver().query(Provider.Location_Survey_Table.CONTENT_URI,
-                        new String[] {Provider.Location_Survey_Table.LOCATION_NAME, Provider.Location_Survey_Table.LONGITUDE, Provider.Location_Survey_Table.LATITUDE},// Provider.TableOne_Data.ACCURACY},
+                        new String[] {Provider.Location_Survey_Table.LOCATION_NAME, Provider.Location_Survey_Table.LONGITUDE, Provider.Location_Survey_Table.LATITUDE},// Provider.Location_Survey_Table.ACCURACY},
                             "(" + Provider.Location_Survey_Table.LATITUDE  + " BETWEEN " + down.getLatitude() + " AND " + up.getLatitude() + ") AND " +
                             "(" + Provider.Location_Survey_Table.LONGITUDE + " BETWEEN " + left.getLatitude() + " AND " + right.getLatitude() + ")",
-//                            Provider.TableOne_Data.ACCURACY + "<" + accuracy,
+//                            Provider.Location_Survey_Table.ACCURACY + "<" + accuracy,
                         null,
                         Provider.Location_Survey_Table.TIMESTAMP + " DESC LIMIT 1");
             return cursor;
@@ -143,15 +141,15 @@ public class DataManager {
                         null);
         }
     }
-    private ProviderManager provide = new ProviderManager(new Provider());
+    private ProviderManager provider = new ProviderManager(new Provider());
 
     //default constructor should be replaced with more useful constructor in future
     DataManager() {
-        provide.start();
+        provider.start();
     }
 
     void giveLocation(final Context context, final Location location) {
-        provide.printAllRows();
+        provider.printAllRows();
         if (isNoteworthy(location)) {
             onLocationReceive(context, location);
         }
@@ -201,30 +199,32 @@ public class DataManager {
                 closest=e;
             }
         }
+        if (closest != null) {
+            provider.delete(closest.get(closest.name));
+        }
         return closest;
     }
 
     private Entry[] getEntries(){
         ArrayList<Entry> entriesList = new <Entry>ArrayList();
-        Cursor c = provide.getAll();
+        Cursor c = provider.getAll();
         if(!c.moveToFirst()) //Check if database is empty
             return new Entry[0];
-//        boolean end = false;
-//        while (!end) {
-//            Entry e = new Entry();
-//            //Change database to entry array
-//            e.put(e.name,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
-//            e.put(e.lat,c.getString(c.getColumnIndex(Provider.TableOne_Data.LATITUDE)));
-//            e.put(e.lon,c.getString(c.getColumnIndex(Provider.TableOne_Data.LONGITUDE)));
-//            e.put(e.accuracy,c.getString(c.getColumnIndex(Provider.TableOne_Data.ACCURACY)));
-//            e.put(e.time,c.getString(c.getColumnIndex(Provider.TableOne_Data.TIMESTAMP)));
-//            //TODO: Add fields to database for following values.
-//            e.put(e.frequency,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
-//            e.put(e.activity,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
-//            e.put(e.with,c.getString(c.getColumnIndex(Provider.TableOne_Data.NAME)));
-//            entriesList.add(e);
-//            end=c.moveToNext();
-//        }
+        boolean end = false;
+        while (!end) {
+            Entry e = new Entry();
+            //Change database to entry array
+            e.put(e.name,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.LOCATION_NAME)));
+            e.put(e.lat,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.LATITUDE)));
+            e.put(e.lon,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.LONGITUDE)));
+            e.put(e.accuracy,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACCURACY)));
+            e.put(e.time,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.TIMESTAMP)));
+            e.put(e.frequency,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.FREQUENCY)));
+            e.put(e.activity,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACTIVITY)));
+            e.put(e.with,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.WITH)));
+            entriesList.add(e);
+            end=c.moveToNext();
+        }
         Entry[] entries = new Entry[entriesList.size()];
         for(int i=0;i<entries.length;i++)
             entries[i]=entriesList.get(i);
@@ -313,7 +313,7 @@ public class DataManager {
                 case NEW_QUESTION_2:
                     //Setting frequency value
                     waiting.put(entry.frequency,esmAnswer);
-                    provide.addEntry(waiting);
+                    provider.addEntry(waiting);
                     waiting = null;
 
                  case PREV_QUESTION_1:
@@ -324,7 +324,7 @@ public class DataManager {
                 case PREV_QUESTION_2:
                     //Setting with value
                     waiting.put(entry.with,esmAnswer);
-                    provide.addEntry(waiting);
+                    provider.addEntry(waiting);
                     waiting = null;
 
                 default:
