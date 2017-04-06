@@ -232,16 +232,22 @@ public class DataManager {
         for(Entry e:entries){
             dist=distance(Double.parseDouble(e.get(e.lat)),Double.parseDouble(e.get(e.lon))
                     ,loc.getLatitude(),loc.getLongitude());
+            Log.i(TAG, "Dist from e: " + dist + "\nE Name: " + e.get(e.name));
             if (dist < Integer.parseInt(e.get(e.range)) && dist<closestDist) {
+                Log.i(TAG, "If was true");
                 closest=e;
             }
         }
 //        DataManager.printEntry(closest);
-        if(closest == null ||closest.get(closest.name).equals(""))
+        if(closest == null) {
+            Log.i(TAG, "Twas null");
             return null;
-        if (closest != null) {
-            provider.delete(closest.get(closest.name));
         }
+        else if (!closest.get(closest.name).equals("")) {
+            return null;
+        }
+
+        provider.delete(closest.get(closest.name));
         return closest;
     }
 
@@ -263,7 +269,7 @@ public class DataManager {
             e.put(e.activity,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACTIVITY)));
             e.put(e.with,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.WITH)));
             entriesList.add(e);
-            end=c.moveToNext();
+            end=!c.moveToNext();
         }
         Entry[] entries = new Entry[entriesList.size()];
         for(int i=0;i<entries.length;i++)
