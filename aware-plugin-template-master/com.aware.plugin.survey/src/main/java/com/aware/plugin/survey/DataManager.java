@@ -34,7 +34,7 @@ public class DataManager {
     int questionsPerQueue;
     Entry waiting; //Waiting for question queue to finish
 
-    private final int NEGLIGIBLE_RANGE = 5;
+    private final int NEGLIGIBLE_RANGE = 6;
     private final int TOLERABLE_ACCURACY = 250;
 
     protected static class ProviderManager extends Thread {
@@ -57,11 +57,15 @@ public class DataManager {
                     Log.i(TAG, "inserting: " + data.values.get(data.name));
                     ContentValues values = new ContentValues();
 
-//                    values.put(Provider.Location_Survey_Table.LOCATION_NAME, data.values.get("name"));
+                    values.put(Provider.Location_Survey_Table.LOCATION_NAME, data.values.get("name"));
                     values.put(Provider.Location_Survey_Table.LATITUDE, Double.parseDouble(data.values.get("lat")));
                     values.put(Provider.Location_Survey_Table.TIMESTAMP, Long.parseLong(data.values.get("time")));    //needs a different time format
                     values.put(Provider.Location_Survey_Table.LONGITUDE, Double.parseDouble(data.values.get("lon")));
-//                    values.put(Provider.Location_Survey_Table.ACCURACY, Integer.parseInt(data.values.get("accuracy")));
+                    values.put(Provider.Location_Survey_Table.ACCURACY, Double.parseDouble(data.values.get("accuracy")));
+                    values.put(Provider.Location_Survey_Table.RANGE, Integer.parseInt(data.values.get("range")));
+                    values.put(Provider.Location_Survey_Table.FREQUENCY, data.values.get("frequency"));
+                    values.put(Provider.Location_Survey_Table.ACTIVITY, data.values.get("activity"));
+                    values.put(Provider.Location_Survey_Table.WITH, data.values.get("with"));
                     provider.insert(Provider.Location_Survey_Table.CONTENT_URI, values);
                     Log.i(TAG, "Stored a location in the database.");
                 }
@@ -233,7 +237,9 @@ public class DataManager {
             }
         }
         DataManager.printEntry(closest);
-        if (closest != null && closest.get(closest.name)!=null) {
+        if(closest.get(closest.name).equals(""))
+            return null;
+        if (closest != null) {
             provider.delete(closest.get(closest.name));
         }
         return closest;
@@ -313,61 +319,38 @@ public class DataManager {
             toBeAnswered.add(entry);
     }
 
-    /**
-     * Checks if there are any issues with the answered ESM and passes on to be stored
-     * @param info All the ESM details ie: Instructions, title etc.
-     * @param answer The user's response to the ESM
-     */
-    void onESMAnswered(JSONObject info, String answer) {
-        if (info == null || answer == null || toBeAnswered.isEmpty()) {
+
+    void onESMAnswered(String answer1,String answer2,int type){//JSONObject info, String answer) {
+        if (answer1 == null || answer2 == null || toBeAnswered.isEmpty()) {
             Log.e(TAG, "Part of the ESM was null or the queue of locations was empty.");
             return;
         }
         Entry entry = toBeAnswered.poll();
-        storeData(info, answer, entry);
+        storeData(answer1, answer2, entry, type);
     }
 
-    /**
-     * Checks what question was answered. If more questions to be added make sure to keep updating info
-     * in waiting entry until last question answered then store entry.
-     * @param esmJson   All the ESM details ie: Instructions, title etc.
-     * @param esmAnswer The user's response to the ESM
-     * @param entry The entry containing the location the ESM is based on
-     */
-    private void storeData(JSONObject esmJson, String esmAnswer, Entry entry) {
 
-        try {
-            String instructions = esmJson.getString("esm_instructions");
-            switch (instructions){
-                case NEW_QUESTION_1:
+    private void storeData(String answer1,String answer2,Entry entry,int locationType){//JSONObject esmJson, String esmAnswer, Entry entry) {
+//            String instructions = esmJson.getString("esm_instructions");
+            switch (locationType){
+                case 1:
                     //Setting name value
-                    entry.put(entry.name,esmAnswer);
-                    waiting = entry;
-                    break;
-                case NEW_QUESTION_2:
+                    entry.put(entry.name,answer1);
                     //Setting frequency value
-                    waiting.put(entry.frequency,esmAnswer);
-                    provider.addEntry(waiting);
-                    waiting = null;
-
-                 case PREV_QUESTION_1:
+                    entry.put(entry.frequency,answer2);
+                    provider.addEntry(entry);
+                    break;
+                 case 2:
                     //Setting activity value
-                    entry.put(entry.activity,esmAnswer);
-                    waiting = entry;
-
-                case PREV_QUESTION_2:
+                    entry.put(entry.activity,answer1);
                     //Setting with value
-                    waiting.put(entry.with,esmAnswer);
-                    provider.addEntry(waiting);
-                    waiting = null;
-
+                    entry.put(entry.with,answer2);
+                    provider.addEntry(entry);
+                     break;
                 default:
                     Log.e(TAG,"Received answer to unknown ESM.\nClearing queue to be answered.");
                     toBeAnswered.clear();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -380,10 +363,10 @@ public class DataManager {
     }
 
     private static void printEntry(Entry loc) {
-        if (loc == null) {
-            Log.i(TAG, "Location was null.");
-            return;
-        }
+//        if (loc == null) {
+//            Log.i(TAG, "Location was null.");
+//            return;
+//        }
         Log.i(TAG,"Entry:\n"+
                 "Time: "+ loc.get(loc.time)+"\n" +
                 "Name: "+ loc.get(loc.name)+"\n" +
