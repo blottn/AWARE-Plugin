@@ -164,7 +164,7 @@ public class DataManager {
             Cursor cursor = Plugin.context.getContentResolver().query(
                     Provider.Location_Survey_Table.CONTENT_URI,
                     null,
-                    Provider.Location_Survey_Table.LOCATION_NAME + "=" + locationName,
+                    "(" + Provider.Location_Survey_Table.LOCATION_NAME + "='" + locationName + "')",
                     null,
                     Provider.Location_Survey_Table._ID + " DESC"
             );
