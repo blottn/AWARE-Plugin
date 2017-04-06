@@ -29,7 +29,7 @@ public class Provider extends ContentProvider {
 
     public static String DATABASE_NAME = "location_survey.db";
 
-    private static String TAG = "AWARE::"+Plugin.context.getResources().getString(R.string.app_name);
+    private static String TAG = "DATABASE";
 
     public static class Location_Survey_Table implements BaseColumns {
         private Location_Survey_Table() {}
