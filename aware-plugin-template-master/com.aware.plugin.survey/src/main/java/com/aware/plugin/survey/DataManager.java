@@ -232,6 +232,9 @@ public class DataManager {
                 closest=e;
             }
         }
+
+        // return null if outside of negligible range
+
         if (closest != null) {
             provider.delete(closest.get(closest.name));
         }
