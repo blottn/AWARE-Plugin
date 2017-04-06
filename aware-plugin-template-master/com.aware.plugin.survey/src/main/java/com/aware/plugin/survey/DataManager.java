@@ -56,7 +56,7 @@ public class DataManager {
             while (true) {
                 if (!toAdd.isEmpty()) {
                     Entry data = toAdd.poll();
-                    Log.i(TAG, "inserting: " + data.values.get("name"));
+                    Log.i(TAG, "inserting: " + data.values.get(data.name));
                     ContentValues values = new ContentValues();
 
 //                    values.put(Provider.TableOne_Data.LOCATION_NAME, data.values.get("name"));
@@ -134,11 +134,15 @@ public class DataManager {
                     Log.i(TAG, "Column: " + column + " value " + cursor.getString(cursor.getColumnIndex(column)));
                 }
             }
-
         }
 
+        void delete(String name) {
+            Plugin.context.getContentResolver().delete(
+                        Provider.Location_Survey_Table.CONTENT_URI,
+                        Provider.Location_Survey_Table.LOCATION_NAME + "=" + name,
+                        null);
+        }
     }
-
     private ProviderManager provide = new ProviderManager(new Provider());
 
     //default constructor should be replaced with more useful constructor in future
@@ -285,7 +289,6 @@ public class DataManager {
             Log.e(TAG, "Part of the ESM was null or the queue of locations was empty.");
             return;
         }
-        //TODO fill out the name field in the entry here
         Entry entry = toBeAnswered.poll();
         storeData(info, answer, entry);
     }
