@@ -34,7 +34,7 @@ class Entry {
         values.put(activity, "null");
         values.put(with, "null");
         values.put(range,"30"); //Default range of location
-        values.put(time,new Time(loc.getTime()).getTime() + "");
+        values.put(time,longToString(new Time(loc.getTime()).getTime()));
     }
 
     public Entry(){
@@ -57,5 +57,15 @@ class Entry {
 
     public String get(String key){
         return values.get(key);
+    }
+
+    String longToString(long l){
+        String s="";
+        while (l > 0) {
+            s= (l%10)+"" + s;
+            l=l/10;
+        }
+        Log.i("ENTRY","Changed long to " + s);
+        return s;
     }
 }

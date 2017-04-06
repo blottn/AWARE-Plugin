@@ -23,7 +23,7 @@ public class Provider extends ContentProvider {
 
     //CONSTANTS
     public static String AUTHORITY = "com.aware.provider.plugin.location.survey";
-    public static final int DATABASE_VERSION = 4;
+    public static final int DATABASE_VERSION = 7;
     public static final int Location_Survey = 1;
     public static final int Location_Survey_ID = 2;
 

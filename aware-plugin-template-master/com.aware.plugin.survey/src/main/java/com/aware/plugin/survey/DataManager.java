@@ -93,7 +93,7 @@ public class DataManager {
                 e.put(e.lat,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.LATITUDE)));
                 e.put(e.lon,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.LONGITUDE)));
                 e.put(e.accuracy,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACCURACY)));
-                e.put(e.time,String.format("%l",c.getLong(c.getColumnIndex(Provider.Location_Survey_Table.TIMESTAMP))));
+                e.put(e.time,e.longToString(c.getLong(c.getColumnIndex(Provider.Location_Survey_Table.TIMESTAMP))));
                 e.put(e.frequency,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.FREQUENCY)));
                 e.put(e.activity,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACTIVITY)));
                 e.put(e.with,c.getString(c.getColumnIndex(Provider.Location_Survey_Table.WITH)));
