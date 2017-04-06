@@ -160,7 +160,7 @@ public class DataManager {
         void delete(String name) {
             Plugin.context.getContentResolver().delete(
                         Provider.Location_Survey_Table.CONTENT_URI,
-                        Provider.Location_Survey_Table.LOCATION_NAME + "=" + name,
+                        Provider.Location_Survey_Table.LOCATION_NAME + "='" + name+"'",
                         null);
         }
 
@@ -276,7 +276,7 @@ public class DataManager {
         ESM_Radio q2 = new ESM_Radio();
         ESMFactory factory1 = new ESMFactory();
         Entry[] entries = getEntries();
-        for(Entry e:entries) q2.addRadio(e.get(e.name));
+        for(Entry e:entries) q1.addRadio(e.get(e.name));
         q1.addRadio("Other")
                 .setInstructions(NEW_QUESTION_1)
                 .setTitle("New Location")
@@ -301,7 +301,7 @@ public class DataManager {
         ESM_Radio q2 = new ESM_Radio();
         ESMFactory factory = new ESMFactory();
         Entry[] entries = getEntries();
-        for(Entry e:entries) q2.addRadio(e.get(e.activity)); //Gets existing entries in database and displays as options
+        for(Entry e:entries) q1.addRadio(e.get(e.activity)); //Gets existing entries in database and displays as options
         q1.addRadio("Other") //Option to allow user to input new entry
                 .setInstructions(PREV_QUESTION_1)
                 .setTitle("Previous Location")
