@@ -140,6 +140,20 @@ public class DataManager {
                         Provider.Location_Survey_Table.LOCATION_NAME + "=" + name,
                         null);
         }
+
+        boolean checkExists(String locationName) {
+            Cursor cursor = Plugin.context.getContentResolver().query(
+                    Provider.Location_Survey_Table.CONTENT_URI,
+                    null,
+                    Provider.Location_Survey_Table.LOCATION_NAME + "=" + locationName,
+                    null,
+                    Provider.Location_Survey_Table._ID + " DESC"
+            );
+
+            return !(cursor == null || cursor.getCount() == 0);
+
+        }
+
     }
     private ProviderManager provider = new ProviderManager(new Provider());
 
