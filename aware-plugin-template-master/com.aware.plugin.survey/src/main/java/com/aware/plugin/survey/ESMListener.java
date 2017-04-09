@@ -29,7 +29,7 @@ public class ESMListener extends BroadcastReceiver {
 
     public void onReceive(Context c, Intent intent) {
         answersReceived++;
-        if(answersReceived!=mgr.questionsPerQueue)
+        if(answersReceived!=DataManager.questionsPerQueue)
             return;
         answersReceived=0;
         Log.i(TAG, "An ESM was answered.");
@@ -45,8 +45,14 @@ public class ESMListener extends BroadcastReceiver {
                     data.moveToPrevious();
                     String a2 = data.getString(data.getColumnIndex(ESM_Provider.ESM_Data.ANSWER));
                     String instructions = esmInfo.getString("esm_instructions");
-                    int type = (instructions.equals(DataManager.NEW_QUESTION_1)) ? 1 : 2;
-                    mgr.onESMAnswered(a1, a2, type);
+                    int type = (instructions.equals(DataManager.NEW_QUESTION_1)) ? 1 : instructions.equals(DataManager.PREV_QUESTION_1) ? 2 : 3;
+                    if (type != 3) {
+                        mgr.onESMAnswered(a1, a2, type);
+                    } else {
+                        String[] part1 = a1.split(":");
+                        String[] part2 = a2.split(":");
+                        mgr.onESMAnswered(part1[0], part2[0], type);
+                    }
                 }
                 data.close();
             } catch (JSONException e) {
