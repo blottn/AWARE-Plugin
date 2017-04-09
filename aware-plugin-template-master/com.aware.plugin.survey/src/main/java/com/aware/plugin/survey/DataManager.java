@@ -34,6 +34,7 @@ class DataManager {
     static boolean timeSet = false; //Won't record locations until true
     private ConcurrentLinkedQueue<Entry> toBeAnswered = new ConcurrentLinkedQueue<>();
     static int questionsPerQueue;
+    boolean locationChecked = false;
 
     private final int NEGLIGIBLE_RANGE = 6;
     private final int TOLERABLE_ACCURACY = 250;
@@ -208,18 +209,28 @@ class DataManager {
 
     private boolean isNoteworthy(Location location) {
         Log.i(TAG, "Checking if location is noteworthy");
-        if (location == null || location.getSpeed() > 4)
+        if (location == null || location.getSpeed() > 4 || location.getAccuracy() > TOLERABLE_ACCURACY)
             return false;
         if (previousLocation == null) {
-            Log.i(TAG, "Not known previous location");
+            Log.i(TAG, "No previous location");
             previousLocation = location;
-            return true;
-        }
-        if (location.getAccuracy() > TOLERABLE_ACCURACY || distance(location.getLatitude(), location.getLongitude(), previousLocation.getLatitude(),
-                previousLocation.getLongitude()) < NEGLIGIBLE_RANGE) { //If points are within negligible range*/
-            Log.i(TAG, "Location was negligible");
             return false;
         }
+        if (location.getTime() - previousLocation.getTime() < 300000) { //Minimum time is 5 minutes
+            Log.i(TAG, "Not at location long enough");
+            return false;
+        }
+        if (!(distance(location.getLatitude(), location.getLongitude(), previousLocation.getLatitude(),
+                previousLocation.getLongitude()) < NEGLIGIBLE_RANGE)) { //If points are within negligible range*/
+            Log.i(TAG, "Location changed, resetting timer");
+            locationChecked = false;
+            return false;
+        }
+        if (locationChecked) {
+            Log.i(TAG, "Location hasn't changed since last question");
+            return false;
+        }
+        locationChecked =true;
         previousLocation = location;
         return true;
     }
@@ -339,7 +350,7 @@ class DataManager {
 
 
     void onESMAnswered(String answer1, String answer2, int type) {//JSONObject info, String answer) {
-        if (answer1 == null || answer2 == null || toBeAnswered.isEmpty()) {
+        if (answer1 == null || answer2 == null || (toBeAnswered.isEmpty() && type != 3)) {
             Log.e(TAG, "Part of the ESM was null or the queue of locations was empty.");
             return;
         }
