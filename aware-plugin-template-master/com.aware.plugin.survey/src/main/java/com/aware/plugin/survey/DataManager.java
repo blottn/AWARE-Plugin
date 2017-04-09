@@ -34,9 +34,9 @@ class DataManager {
     static boolean timeSet = false; //Won't record locations until true
     private ConcurrentLinkedQueue<Entry> toBeAnswered = new ConcurrentLinkedQueue<>();
     static int questionsPerQueue;
-    boolean locationChecked = false;
+    private boolean locationChecked = false;
 
-    private final int NEGLIGIBLE_RANGE = 6;
+    private final int NEGLIGIBLE_RANGE = 30;
     private final int TOLERABLE_ACCURACY = 250;
 
     private static class ProviderManager extends Thread {
@@ -201,7 +201,6 @@ class DataManager {
         if(hour<startQuestions || hour>stopQuestions) {
             return;
         }
-        provider.printAllRows();
         if (timeSet && isNoteworthy(location)) {
             onLocationReceive(context, location);
         }
@@ -216,7 +215,7 @@ class DataManager {
             previousLocation = location;
             return false;
         }
-        if (location.getTime() - previousLocation.getTime() < 300000) { //Minimum time is 5 minutes
+        if (location.getTime() - previousLocation.getTime() < 30000) { //Minimum time is 5 minutes
             Log.i(TAG, "Not at location long enough");
             return false;
         }
@@ -360,7 +359,6 @@ class DataManager {
 
 
     private void storeData(String answer1, String answer2, Entry entry, int type) {//JSONObject esmJson, String esmAnswer, Entry entry) {
-//            String instructions = esmJson.getString("esm_instructions");
         switch (type) {
             case 1:
                 //Setting name value
@@ -377,7 +375,6 @@ class DataManager {
                 provider.addEntry(entry);
                 break;
             case 3:
-                timeSet = true;
                 startQuestions = Integer.parseInt(answer1);
                 stopQuestions = Integer.parseInt(answer2);
                 break;

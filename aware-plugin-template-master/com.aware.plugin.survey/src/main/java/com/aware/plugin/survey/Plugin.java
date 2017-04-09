@@ -98,7 +98,6 @@ public class Plugin extends Aware_Plugin {
             Aware.setSetting(this, Aware_Preferences.STATUS_ESM, true);
             Aware.startESM(this);
             if (!DataManager.timeSet) {
-                DataManager.timeSet = true;
                 try {
                     ESM_Radio q1 = new ESM_Radio();
                     ESM_Radio q2 = new ESM_Radio();
@@ -118,6 +117,7 @@ public class Plugin extends Aware_Plugin {
                     factory.addESM(q2);
                     DataManager.questionsPerQueue = 2;
                     ESM.queueESM(context, factory.build());
+                    DataManager.timeSet = true;
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
