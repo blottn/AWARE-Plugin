@@ -21,7 +21,13 @@ import java.util.HashMap;
 
 public class Provider extends ContentProvider {
 
-    //CONSTANTS
+    /*
+        Despite the fact that these methods should work fine when called on a Provider object,
+        We strongly recommend calling them via Context.getContentResolver().xxx() where xxx is for example query, insert or delete as needed.
+     */
+
+
+    //DATABASE CONSTANTS
     public static String AUTHORITY = "com.aware.provider.plugin.location.survey";
     public static final int DATABASE_VERSION = 7;
     public static final int Location_Survey = 1;
@@ -31,6 +37,7 @@ public class Provider extends ContentProvider {
 
     private static String TAG = "DATABASE";
 
+    //Table columns
     public static class Location_Survey_Table implements BaseColumns {
         private Location_Survey_Table() {}
         // Important init stuff
@@ -57,6 +64,7 @@ public class Provider extends ContentProvider {
     private static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/location_survey");
     public static final String[] DATABASE_TABLES = {"location_survey"};
 
+    //Telling sql what type of columns they are
     public static final String[] TABLES_FIELDS = {
             Location_Survey_Table._ID + " integer primary key autoincrement, " +
                     Location_Survey_Table.TIMESTAMP + " real default 0," +
@@ -82,7 +90,7 @@ public class Provider extends ContentProvider {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(AUTHORITY, DATABASE_TABLES[0], Location_Survey); //URI for all records
         sUriMatcher.addURI(AUTHORITY, DATABASE_TABLES[0]+"/#", Location_Survey_ID); //URI for a single record
-
+        //added columns to the mapping
         tableMap = new HashMap<String, String>();
         tableMap.put(Location_Survey_Table._ID, Location_Survey_Table._ID);
         tableMap.put(Location_Survey_Table.TIMESTAMP, Location_Survey_Table.TIMESTAMP);
@@ -97,6 +105,8 @@ public class Provider extends ContentProvider {
         tableMap.put(Location_Survey_Table.ACTIVITY, Location_Survey_Table.ACTIVITY);
         return true; //let Android know that the database is ready to be used.
     }
+
+    //initialize database to memory, do not change
     private boolean initializeDB() {
         if (databaseHelper == null) {
             databaseHelper = new DatabaseHelper(getContext(), DATABASE_NAME, null, DATABASE_VERSION, DATABASE_TABLES, TABLES_FIELDS );
@@ -107,6 +117,8 @@ public class Provider extends ContentProvider {
         return( database != null && databaseHelper != null);
     }
 
+
+    //reset the database
     public static void resetDB( Context c ) {
         Log.d("AWARE", "Resetting " + DATABASE_NAME + "...");
 
@@ -118,6 +130,8 @@ public class Provider extends ContentProvider {
         }
     }
 
+
+    // delete an entry from the database
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         if( ! initializeDB() ) {
@@ -137,6 +151,7 @@ public class Provider extends ContentProvider {
         return count;
     }
 
+    //get the type of the particular uri
     @Override
     public String getType(Uri uri) {
         switch (sUriMatcher.match(uri)) {
@@ -149,6 +164,7 @@ public class Provider extends ContentProvider {
         }
     }
 
+    //insert a value into the database
     @Override
     public Uri insert(Uri uri, ContentValues new_values) {
         if( ! initializeDB() ) {
@@ -172,6 +188,8 @@ public class Provider extends ContentProvider {
         }
     }
 
+
+    //to query the database
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         if( ! initializeDB() ) {
@@ -198,6 +216,7 @@ public class Provider extends ContentProvider {
         }
     }
 
+    //update a field
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         if( ! initializeDB() ) {
