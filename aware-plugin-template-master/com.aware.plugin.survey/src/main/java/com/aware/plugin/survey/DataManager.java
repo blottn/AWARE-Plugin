@@ -147,7 +147,7 @@ class DataManager {
             e.put(e.lat, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.LATITUDE)));
             e.put(e.lon, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.LONGITUDE)));
             e.put(e.accuracy, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACCURACY)));
-            e.put(e.time, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.TIMESTAMP)));
+            e.put(e.time, e.longToString(c.getLong(c.getColumnIndex(Provider.Location_Survey_Table.TIMESTAMP))));
             e.put(e.frequency, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.FREQUENCY)));
             e.put(e.activity, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACTIVITY)));
             e.put(e.with, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.WITH)));
@@ -194,6 +194,8 @@ class DataManager {
         ESM_Radio q2 = new ESM_Radio();
         ESMFactory factory = new ESMFactory();
         Entry[] entries = getEntries();
+        for(Entry e: entries)
+            printEntry(e);
         for (Entry e : entries)
             if (!e.get(e.activity).equals("null"))
                 q1.addRadio(e.get(e.activity)); //Gets existing entries in database and displays as options
@@ -263,22 +265,22 @@ class DataManager {
         toBeAnswered.clear(); //Remove corresponding location
     }
 
-//    private static void printEntry(Entry loc) {
-//        if (loc == null) {
-//            Log.i(TAG, "Location was null.");
-//            return;
-//        }
-//        Log.i(TAG, "Entry:\n" +
-//                "Time: " + loc.get(loc.time) + "\n" +
-//                "Name: " + loc.get(loc.name) + "\n" +
-//                "Lat: " + loc.get(loc.lat) + "\n" +
-//                "Lon: " + loc.get(loc.lon) + "\n" +
-//                "Accuracy: " + loc.get(loc.accuracy) + "\n" +
-//                "Range: " + loc.get(loc.range) + "\n" +
-//                "Frequency: " + loc.get(loc.frequency) + "\n" +
-//                "Activity: " + loc.get(loc.activity) + "\n" +
-//                "With: " + loc.get(loc.with) + "\n");
-//    }
+    static void printEntry(Entry loc) {
+        if (loc == null) {
+            Log.i(TAG, "Location was null.");
+            return;
+        }
+        Log.i(TAG, "Entry:\n" +
+                "Time: " + loc.get(loc.time) + "\n" +
+                "Name: " + loc.get(loc.name) + "\n" +
+                "Lat: " + loc.get(loc.lat) + "\n" +
+                "Lon: " + loc.get(loc.lon) + "\n" +
+                "Accuracy: " + loc.get(loc.accuracy) + "\n" +
+                "Range: " + loc.get(loc.range) + "\n" +
+                "Frequency: " + loc.get(loc.frequency) + "\n" +
+                "Activity: " + loc.get(loc.activity) + "\n" +
+                "With: " + loc.get(loc.with) + "\n");
+    }
 
     /**
      * @param lat1 Latitude of point 1

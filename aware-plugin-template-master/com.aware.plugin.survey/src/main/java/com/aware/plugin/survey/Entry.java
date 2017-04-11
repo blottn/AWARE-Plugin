@@ -6,6 +6,9 @@ import android.util.Log;
 import java.math.BigDecimal;
 import java.sql.Time;
 import java.util.HashMap;
+
+import static com.aware.Aware.TAG;
+
 /**
  * Created by ronan on 03/04/2017.
  */
@@ -52,6 +55,12 @@ class Entry {
     }
 
     public void put(String key,String val){
+        if (key.equals(time)) {
+            StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+            Log.i(TAG, "-------------------------\n" +
+                    "METHOD NAME: " + stackTraceElements[3]
+                    + "Value : " + val);
+        }
         values.put(key,val);
     }
 

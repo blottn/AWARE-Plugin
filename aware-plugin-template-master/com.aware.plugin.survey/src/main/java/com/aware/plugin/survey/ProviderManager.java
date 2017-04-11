@@ -28,19 +28,19 @@ class ProviderManager extends Thread {
     public void run() {
         while (true) {
             if (!toAdd.isEmpty()) {
-                Entry data = toAdd.poll();
-                Log.i(TAG, "inserting: " + data.values.get(data.name));
+                Entry entry = toAdd.poll();
+                Log.i(TAG, "inserting: " + entry.values.get(entry.name));
                 ContentValues values = new ContentValues();
 
-                values.put(Provider.Location_Survey_Table.LOCATION_NAME, data.values.get("name"));
-                values.put(Provider.Location_Survey_Table.LATITUDE, Double.parseDouble(data.values.get("lat")));
-                values.put(Provider.Location_Survey_Table.TIMESTAMP, Long.parseLong(data.values.get("time")));
-                values.put(Provider.Location_Survey_Table.LONGITUDE, Double.parseDouble(data.values.get("lon")));
-                values.put(Provider.Location_Survey_Table.ACCURACY, Double.parseDouble(data.values.get("accuracy")));
-                values.put(Provider.Location_Survey_Table.RANGE, Integer.parseInt(data.values.get("range")));
-                values.put(Provider.Location_Survey_Table.FREQUENCY, data.values.get("frequency"));
-                values.put(Provider.Location_Survey_Table.ACTIVITY, data.values.get("activity"));
-                values.put(Provider.Location_Survey_Table.WITH, data.values.get("with"));
+                values.put(Provider.Location_Survey_Table.LOCATION_NAME, entry.values.get("name"));
+                values.put(Provider.Location_Survey_Table.LATITUDE, Double.parseDouble(entry.values.get("lat")));
+                values.put(Provider.Location_Survey_Table.TIMESTAMP, Long.parseLong(entry.values.get("time")));
+                values.put(Provider.Location_Survey_Table.LONGITUDE, Double.parseDouble(entry.values.get("lon")));
+                values.put(Provider.Location_Survey_Table.ACCURACY, Double.parseDouble(entry.values.get("accuracy")));
+                values.put(Provider.Location_Survey_Table.RANGE, Integer.parseInt(entry.values.get("range")));
+                values.put(Provider.Location_Survey_Table.FREQUENCY, entry.values.get("frequency"));
+                values.put(Provider.Location_Survey_Table.ACTIVITY, entry.values.get("activity"));
+                values.put(Provider.Location_Survey_Table.WITH, entry.values.get("with"));
                 provider.insert(Provider.Location_Survey_Table.CONTENT_URI, values);
                 Log.i(TAG, "Stored a location in the database.");
             }
