@@ -1,9 +1,9 @@
 package com.aware.plugin.survey;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.location.*;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.aware.ESM;
@@ -11,7 +11,6 @@ import com.aware.ui.esms.*;
 
 import org.json.JSONException;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -31,13 +30,13 @@ class DataManager {
     static final String TIME_QUESTION_START = "When would you like questions to start?";
     static final String TIME_QUESTION_STOP = "When would you like questions to stop?";
     private static Location previousLocation = null;
-    int startQuestions = 0;
-    int stopQuestions = 0;
+    private int startQuestions = 0;
+    private int stopQuestions = 0;
     static boolean timeSet = false; //Won't record locations until true
     private ConcurrentLinkedQueue<Entry> toBeAnswered = new ConcurrentLinkedQueue<>();
     static int questionsPerQueue;
     private boolean locationChecked = false;
-    Date asked = null; //When last question was asked
+    private Date asked = null; //When last question was asked
 
     private ProviderManager provider = new ProviderManager(new Provider());
 
@@ -87,9 +86,12 @@ class DataManager {
             Log.i(TAG, "Location hasn't changed since last question");
             return false;
         }
+        if (asked != null && new Date().getTime() - asked.getTime() < 3600000) {
+            Log.i(TAG, "Not long enough since last question");
+            return false;
+        } //Only ask questions after an hour since last one
         locationChecked =true;
         asked = new Date();
-
         previousLocation = location;
         return true;
     }
@@ -107,6 +109,7 @@ class DataManager {
         }
     }
 
+    @Nullable
     private Entry isPreviousLocation(Location loc) {
         Entry[] entries = getEntries();
         Entry closest = null;
@@ -214,7 +217,7 @@ class DataManager {
     }
 
 
-    void onESMAnswered(String answer1, String answer2, int type) {//JSONObject info, String answer) {
+    void onESMAnswered(String answer1, String answer2, int type) {
         if (answer1 == null || answer2 == null || (toBeAnswered.isEmpty() && type != 3)) {
             Log.e(TAG, "Part of the ESM was null or the queue of locations was empty.");
             return;
@@ -224,7 +227,7 @@ class DataManager {
     }
 
 
-    private void storeData(String answer1, String answer2, Entry entry, int type) {//JSONObject esmJson, String esmAnswer, Entry entry) {
+    private void storeData(String answer1, String answer2, Entry entry, int type) {
         switch (type) {
             case 1:
                 //Setting name value
