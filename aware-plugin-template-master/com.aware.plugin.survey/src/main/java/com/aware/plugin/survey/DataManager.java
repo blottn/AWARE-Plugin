@@ -71,7 +71,7 @@ class DataManager {
             previousLocation = location;
             return false;
         }
-        if (location.getTime() - previousLocation.getTime() < 15000) { //Minimum time is 15 minutes
+        if (location.getTime() - previousLocation.getTime() < 900000) { //Minimum time is 15 minutes
             Log.i(TAG, "Not at location long enough");
             return false;
         }
