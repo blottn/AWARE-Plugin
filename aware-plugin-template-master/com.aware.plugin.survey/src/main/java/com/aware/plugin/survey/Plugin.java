@@ -12,7 +12,11 @@ import com.aware.Aware_Preferences;
 import com.aware.ESM;
 import com.aware.Locations;
 import com.aware.ui.PermissionsHandler;
+import com.aware.ui.esms.ESMFactory;
+import com.aware.ui.esms.ESM_Radio;
 import com.aware.utils.Aware_Plugin;
+
+import org.json.JSONException;
 
 
 public class Plugin extends Aware_Plugin {
@@ -93,6 +97,31 @@ public class Plugin extends Aware_Plugin {
             //Ask AWARE to start ESM
             Aware.setSetting(this, Aware_Preferences.STATUS_ESM, true);
             Aware.startESM(this);
+            if (!DataManager.timeSet) {
+                try {
+                    ESM_Radio q1 = new ESM_Radio();
+                    ESM_Radio q2 = new ESM_Radio();
+                    ESMFactory factory = new ESMFactory();
+                    for (int i=0;i<24;i=i+2)
+                        q1.addRadio(i+":00"); //Gets existing entries in database and displays as options
+                    q1.setInstructions(DataManager.TIME_QUESTION_START)
+                            .setTitle("Set Start Time")
+                            .setSubmitButton("OK");
+
+                    factory.addESM(q1);
+                    for (int i=0;i<24;i=i+2)
+                        q2.addRadio(i+":00");
+                    q2.setInstructions(DataManager.TIME_QUESTION_STOP)
+                            .setTitle("Set End Time")
+                            .setSubmitButton("OK");
+                    factory.addESM(q2);
+                    DataManager.questionsPerQueue = 2;
+                    ESM.queueESM(context, factory.build());
+                    DataManager.timeSet = true;
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
 
         } else {
             Intent permissions = new Intent(this, PermissionsHandler.class);
