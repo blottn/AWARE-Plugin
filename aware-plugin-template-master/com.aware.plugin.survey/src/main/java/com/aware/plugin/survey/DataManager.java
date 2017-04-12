@@ -71,7 +71,7 @@ class DataManager {
             previousLocation = location;
             return false;
         }
-        if (location.getTime() - previousLocation.getTime() < 300) { //Minimum time is 15 minutes
+        if (location.getTime() - previousLocation.getTime() < 900000) { //Minimum time is 15 minutes
             Log.i(TAG, "Not at location long enough");
             return false;
         }
@@ -82,11 +82,11 @@ class DataManager {
             locationChecked = false;
             return false;
         }
-        /*if (locationChecked) {
+        if (locationChecked) {
             Log.i(TAG, "Location hasn't changed since last question");
-            return false;           //TODO remove this commenting out
-        }*/
-        if (asked != null && new Date().getTime() - asked.getTime() < 300) {
+            return false;
+        }
+        if (asked != null && new Date().getTime() - asked.getTime() < 3600000) {
             Log.i(TAG, "Not long enough since last question");
             return false;
         } //Only ask questions after an hour since last one
