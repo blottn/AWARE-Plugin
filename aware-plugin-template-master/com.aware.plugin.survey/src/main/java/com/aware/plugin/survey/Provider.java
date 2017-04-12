@@ -59,6 +59,7 @@ public class Provider extends ContentProvider {
         public static final String FREQUENCY = "location_frequency";
         public static final String WITH = "company";
         public static final String RANGE = "range";
+        public static final String ESM_IDS = "esm_ids";
     }
 
     private static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/location_survey");
@@ -75,6 +76,7 @@ public class Provider extends ContentProvider {
                     Location_Survey_Table.LOCATION_NAME + " text default ''," +
                     Location_Survey_Table.FREQUENCY + " real default 0," +
                     Location_Survey_Table.WITH + " text default ''," +
+                    Location_Survey_Table.ESM_IDS + " text default ''," +
                     Location_Survey_Table.RANGE + " real default 0," +
                     Location_Survey_Table.ACTIVITY + " text default''"
     };
@@ -101,6 +103,7 @@ public class Provider extends ContentProvider {
         tableMap.put(Location_Survey_Table.LOCATION_NAME, Location_Survey_Table.LOCATION_NAME);
         tableMap.put(Location_Survey_Table.FREQUENCY, Location_Survey_Table.FREQUENCY);
         tableMap.put(Location_Survey_Table.WITH, Location_Survey_Table.WITH);
+        tableMap.put(Location_Survey_Table.ESM_IDS, Location_Survey_Table.ESM_IDS);
         tableMap.put(Location_Survey_Table.RANGE, Location_Survey_Table.RANGE);
         tableMap.put(Location_Survey_Table.ACTIVITY, Location_Survey_Table.ACTIVITY);
         return true; //let Android know that the database is ready to be used.

@@ -10,6 +10,7 @@ import static android.content.ContentValues.TAG;
 
 /**
  * Created by ronan on 11/04/2017.
+ * Author : Nicholas
  */
 
 class ProviderManager extends Thread {
@@ -37,6 +38,7 @@ class ProviderManager extends Thread {
                 values.put(Provider.Location_Survey_Table.TIMESTAMP, Long.parseLong(entry.values.get("time")));
                 values.put(Provider.Location_Survey_Table.LONGITUDE, Double.parseDouble(entry.values.get("lon")));
                 values.put(Provider.Location_Survey_Table.ACCURACY, Double.parseDouble(entry.values.get("accuracy")));
+                values.put(Provider.Location_Survey_Table.ESM_IDS, entry.get(entry.esms));
                 values.put(Provider.Location_Survey_Table.RANGE, Integer.parseInt(entry.values.get("range")));
                 values.put(Provider.Location_Survey_Table.FREQUENCY, entry.values.get("frequency"));
                 values.put(Provider.Location_Survey_Table.ACTIVITY, entry.values.get("activity"));
@@ -69,6 +71,7 @@ class ProviderManager extends Thread {
             e.put(e.lon, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.LONGITUDE)));
             e.put(e.accuracy, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACCURACY)));
             e.put(e.time, e.longToString(c.getLong(c.getColumnIndex(Provider.Location_Survey_Table.TIMESTAMP))));
+            e.put(e.esms, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ESM_IDS)) + " " + entry.get(entry.esms));
             e.put(e.frequency, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.FREQUENCY)));
             e.put(e.activity, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACTIVITY)));
             e.put(e.with, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.WITH)));
@@ -115,24 +118,25 @@ class ProviderManager extends Thread {
 //            return cursor;
 //        }
 //
-//        void printAllRows() {
-//            Cursor cursor = Plugin.context.getContentResolver().query(Provider.Location_Survey_Table.CONTENT_URI,
-//                    null,
-//                    null,
-//                    null,
-//                    Provider.Location_Survey_Table.TIMESTAMP + " DESC LIMIT 1"
-//            );
-//            if (cursor == null) {
-//                return;
-//            }
-//            Log.i(TAG, "here are all the rows of the database " + cursor.getCount());
-//            while (cursor.moveToNext()) {
-//                for (String column : cursor.getColumnNames()) {
-//                    Log.i(TAG, "Column: " + column + " value " + cursor.getString(cursor.getColumnIndex(column)));
-//                }
-//            }
-//            cursor.close();
-//        }
+        void printAllRows() {
+            Cursor cursor = Plugin.context.getContentResolver().query(Provider.Location_Survey_Table.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    Provider.Location_Survey_Table.TIMESTAMP + " DESC LIMIT 1"
+            );
+            if (cursor == null) {
+                return;
+            }
+            Log.i(TAG, "here are all the rows of the database " + cursor.getCount());
+            while (cursor.moveToNext()) {
+                for (String column : cursor.getColumnNames()) {
+                    Log.i(TAG, "Column: " + column + " value " + cursor.getString(cursor.getColumnIndex(column)));
+                }
+            }
+            cursor.close();
+        }
+
 
     void delete(String name) {
         Plugin.context.getContentResolver().delete(

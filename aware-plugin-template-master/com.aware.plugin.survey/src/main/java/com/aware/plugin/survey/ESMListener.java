@@ -46,12 +46,13 @@ public class ESMListener extends BroadcastReceiver {
                     String a2 = data.getString(data.getColumnIndex(ESM_Provider.ESM_Data.ANSWER));
                     String instructions = esmInfo.getString("esm_instructions");
                     int type = (instructions.equals(DataManager.NEW_QUESTION_1)) ? 1 : instructions.equals(DataManager.PREV_QUESTION_1) ? 2 : 3;
+                    int id = data.getInt(data.getColumnIndex(ESM_Provider.ESM_Data._ID));
                     if (type != 3) {
-                        mgr.onESMAnswered(a1, a2, type);
+                        mgr.onESMAnswered(a1, a2, type, id);
                     } else {
                         String[] part1 = a1.split(":");
                         String[] part2 = a2.split(":");
-                        mgr.onESMAnswered(part1[0], part2[0], type);
+                        mgr.onESMAnswered(part1[0], part2[0], type, id);
                     }
                 }
                 data.close();

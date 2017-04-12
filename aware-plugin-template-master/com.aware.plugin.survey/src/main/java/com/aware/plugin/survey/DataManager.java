@@ -71,7 +71,7 @@ class DataManager {
             previousLocation = location;
             return false;
         }
-        if (location.getTime() - previousLocation.getTime() < 900000) { //Minimum time is 15 minutes
+        if (location.getTime() - previousLocation.getTime() < 300) { //Minimum time is 15 minutes
             Log.i(TAG, "Not at location long enough");
             return false;
         }
@@ -82,11 +82,11 @@ class DataManager {
             locationChecked = false;
             return false;
         }
-        if (locationChecked) {
+        /*if (locationChecked) {
             Log.i(TAG, "Location hasn't changed since last question");
-            return false;
-        }
-        if (asked != null && new Date().getTime() - asked.getTime() < 3600000) {
+            return false;           //TODO remove this commenting out
+        }*/
+        if (asked != null && new Date().getTime() - asked.getTime() < 300) {
             Log.i(TAG, "Not long enough since last question");
             return false;
         } //Only ask questions after an hour since last one
@@ -97,6 +97,7 @@ class DataManager {
     }
 
     private void onLocationReceive(Context context, Location location) {
+        provider.printAllRows();
         try {
             Entry entry = isPreviousLocation(location);
             if (entry == null) {
@@ -148,6 +149,7 @@ class DataManager {
             e.put(e.lon, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.LONGITUDE)));
             e.put(e.accuracy, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACCURACY)));
             e.put(e.time, e.longToString(c.getLong(c.getColumnIndex(Provider.Location_Survey_Table.TIMESTAMP))));
+            e.put(e.esms, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ESM_IDS)));
             e.put(e.frequency, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.FREQUENCY)));
             e.put(e.activity, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.ACTIVITY)));
             e.put(e.with, c.getString(c.getColumnIndex(Provider.Location_Survey_Table.WITH)));
@@ -219,21 +221,23 @@ class DataManager {
     }
 
 
-    void onESMAnswered(String answer1, String answer2, int type) {
+    void onESMAnswered(String answer1, String answer2, int type, int id) {
         if (answer1 == null || answer2 == null || (toBeAnswered.isEmpty() && type != 3)) {
             Log.e(TAG, "Part of the ESM was null or the queue of locations was empty.");
             return;
         }
         Entry entry = toBeAnswered.poll();
-        storeData(answer1, answer2, entry, type);
+        storeData(answer1, answer2, entry, type, id);
     }
 
 
-    private void storeData(String answer1, String answer2, Entry entry, int type) {
+    private void storeData(String answer1, String answer2, Entry entry, int type, int id) {
+
         switch (type) {
             case 1:
                 //Setting name value
                 entry.put(entry.name, answer1);
+                entry.put(entry.esms, id + "");
                 //Setting frequency value
                 entry.put(entry.frequency, answer2);
                 provider.addEntry(entry);
@@ -243,6 +247,7 @@ class DataManager {
                 entry.put(entry.activity, answer1);
                 //Setting with value
                 entry.put(entry.with, answer2);
+                entry.put(entry.esms, id + "");
                 provider.addEntry(entry);
                 break;
             case 3:
@@ -279,6 +284,7 @@ class DataManager {
                 "Range: " + loc.get(loc.range) + "\n" +
                 "Frequency: " + loc.get(loc.frequency) + "\n" +
                 "Activity: " + loc.get(loc.activity) + "\n" +
+                "ESM ids: " + loc.get(loc.esms) + "\n" +
                 "With: " + loc.get(loc.with) + "\n");
     }
 
